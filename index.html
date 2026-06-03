@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AidA Maritime Financial Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7faf9;
+      --paper: #ffffff;
+      --paper-2: #f1f5f4;
+      --ink: #10201d;
+      --muted: #60706c;
+      --line: #dbe6e3;
+      --line-2: #c9d8d4;
+      --teal: #00bfa8;
+      --teal-dark: #008b7e;
+      --red: #df3f45;
+      --amber: #e49b18;
+      --green: #10a66d;
+      --blue: #3178d4;
+      --violet: #7257d9;
+      --gold: #b69113;
+      --shadow: 0 20px 60px rgba(16, 32, 29, .10);
+      --shadow-soft: 0 10px 30px rgba(16, 32, 29, .07);
+      --radius: 10px;
+      --mono: "Space Mono", monospace;
+      --font: "DM Sans", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: var(--font);
+      letter-spacing: 0;
+      overflow-x: hidden;
+    }
+    body.modal-open { overflow: hidden; }
+    button, input, select, textarea { font: inherit; }
+    button { border: 0; cursor: pointer; color: inherit; background: transparent; }
+    button:hover, a:hover { opacity: .82; }
+    button:disabled { opacity: .48; cursor: not-allowed; }
+    a { color: var(--teal-dark); text-decoration: none; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      color: var(--ink);
+      padding: 11px 12px;
+      outline: none;
+    }
+    textarea { min-height: 116px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 4px rgba(0, 191, 168, .13);
+    }
+    .hidden { display: none !important; }
+    .mono { font-family: var(--mono); }
+    .muted { color: var(--muted); }
+    .container { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    .btn {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      padding: 0 15px;
+      background: var(--paper);
+      color: var(--ink);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .btn.primary { background: var(--ink); color: white; border-color: var(--ink); }
+    .btn.teal { background: var(--teal); color: #001d19; border-color: var(--teal); }
+    .btn.ghost { color: var(--teal-dark); border-color: rgba(0, 191, 168, .35); background: rgba(0, 191, 168, .07); }
+    .btn.danger { color: var(--red); border-color: rgba(223, 63, 69, .35); background: rgba(223, 63, 69, .06); }
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      position: relative;
+    }
+    .badge, .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: var(--paper-2);
+      color: var(--muted);
+      font: 700 11px/1 var(--mono);
+      white-space: nowrap;
+    }
+    .badge.green, .pill.green { color: var(--green); background: rgba(16, 166, 109, .09); border-color: rgba(16, 166, 109, .25); }
+    .badge.red, .pill.red { color: var(--red); background: rgba(223, 63, 69, .08); border-color: rgba(223, 63, 69, .25); }
+    .badge.amber, .pill.amber { color: var(--amber); background: rgba(228, 155, 24, .10); border-color: rgba(228, 155, 24, .28); }
+    .badge.blue, .pill.blue { color: var(--blue); background: rgba(49, 120, 212, .09); border-color: rgba(49, 120, 212, .25); }
+    .badge.gold, .pill.gold { color: #5c4700; background: rgba(182, 145, 19, .16); border-color: rgba(182, 145, 19, .32); }
+    .dot { width: 8px; height: 8px; border-radius: 99px; background: var(--muted); display: inline-block; }
+    .dot.green { background: var(--green); }
+    .dot.red { background: var(--red); }
+    .dot.amber { background: var(--amber); }
+    .dot.blue { background: var(--blue); }
+    .pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(223,63,69,.45); } 50% { box-shadow: 0 0 0 8px rgba(223,63,69,0); } }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow-soft);
+    }
+    .panel { padding: 18px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .section-title { margin: 0 0 10px; font-size: clamp(30px, 5vw, 54px); line-height: 1; letter-spacing: -.03em; }
+    .section-kicker { margin: 0 0 10px; color: var(--teal-dark); font: 700 12px/1 var(--mono); text-transform: uppercase; }
+    .field { display: grid; gap: 7px; }
+    .field label { color: var(--muted); font: 700 11px/1.2 var(--mono); text-transform: uppercase; }
+    .fade { animation: fade .18s ease both; }
+    @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(247, 250, 249, .85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(219, 230, 227, .86);
+    }
+    .site-nav .container {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      text-align: left;
+    }
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--ink);
+      color: var(--teal);
+      font-weight: 900;
+      letter-spacing: -.04em;
+    }
+    .brand small { display: block; color: var(--muted); font-weight: 700; font-size: 11px; }
+    .nav-links { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .nav-links a { color: var(--muted); font-weight: 800; font-size: 14px; }
+    .lang-toggle {
+      display: inline-flex;
+      gap: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px;
+      background: var(--paper);
+    }
+    .lang-toggle button {
+      min-width: 34px;
+      height: 28px;
+      border-radius: 999px;
+      color: var(--muted);
+      font: 700 11px/1 var(--mono);
+    }
+    .lang-toggle button.active { color: #00231f; background: var(--teal); }
+    .hero {
+      padding: 72px 0 58px;
+      background:
+        linear-gradient(120deg, rgba(0, 191, 168, .12), transparent 30%),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--line);
+    }
+    .hero-layout {
+      display: grid;
+      grid-template-columns: minmax(0, .95fr) minmax(360px, 1.05fr);
+      gap: 34px;
+      align-items: center;
+    }
+    .hero h1 { margin: 0; max-width: 720px; font-size: clamp(42px, 6vw, 72px); line-height: .96; letter-spacing: -.055em; }
+    .hero p { color: var(--muted); font-size: 18px; line-height: 1.55; max-width: 660px; }
+    .hero-actions, .chip-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+    .hero-preview {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .preview-top {
+      display: flex;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfdfc;
+    }
+    .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+    .preview-kpi { padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper-2); }
+    .preview-kpi strong { display: block; font-size: 28px; letter-spacing: -.04em; }
+    .preview-list { padding: 0 16px 16px; display: grid; gap: 8px; }
+    .preview-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius); }
+    .site-section { padding: 64px 0; }
+    .feature-card h3 { margin: 0 0 8px; }
+    .feature-card p { margin: 0; color: var(--muted); line-height: 1.45; }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .flow-step { padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+    .flow-step span { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 99px; background: var(--ink); color: white; font: 700 12px/1 var(--mono); margin-bottom: 10px; }
+    footer { padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      background: var(--bg);
+    }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+      padding: 18px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(12px);
+    }
+    .side-nav { display: grid; gap: 6px; }
+    .side-nav button {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-weight: 800;
+      text-align: left;
+    }
+    .side-nav button.active { background: var(--ink); color: white; }
+    .app-main { min-width: 0; }
+    .app-top {
+      position: sticky;
+      top: 0;
+      z-index: 35;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(247,250,249,.9);
+      backdrop-filter: blur(12px);
+    }
+    .mobile-tabs {
+      display: none;
+      overflow-x: auto;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+    }
+    .mobile-tabs button { flex: 0 0 auto; }
+    .content { padding: 20px; }
+    .module-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .module-head h1 { margin: 0 0 6px; font-size: clamp(28px, 4vw, 44px); letter-spacing: -.04em; }
+    .module-head p { margin: 0; color: var(--muted); max-width: 760px; line-height: 1.45; }
+    .kpi { padding: 16px; }
+    .kpi span { color: var(--muted); font: 700 11px/1.2 var(--mono); text-transform: uppercase; }
+    .kpi strong { display: block; margin-top: 8px; font-size: 30px; letter-spacing: -.04em; }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .toolbar-left { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .search { max-width: 360px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+    table { width: 100%; min-width: 980px; border-collapse: collapse; }
+    th, td { padding: 12px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; vertical-align: middle; }
+    th { color: var(--muted); background: #fbfdfc; font: 700 11px/1 var(--mono); text-transform: uppercase; }
+    tr.clickable { cursor: pointer; }
+    .risk {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 99px;
+      color: white;
+      font: 700 12px/1 var(--mono);
+      background: var(--green);
+    }
+    .risk.mid { background: var(--amber); }
+    .risk.high { background: var(--red); }
+    .insight-feed { display: grid; gap: 10px; }
+    .insight { padding: 12px; border: 1px solid var(--line); border-left: 4px solid var(--teal); border-radius: var(--radius); background: var(--paper); }
+    .insight.red { border-left-color: var(--red); }
+    .insight.amber { border-left-color: var(--amber); }
+    .bar-chart { display: grid; grid-template-columns: 44px repeat(4, 1fr); gap: 12px; align-items: end; min-height: 220px; padding: 16px; }
+    .bar-y { height: 160px; display: flex; flex-direction: column; justify-content: space-between; color: var(--muted); font: 700 10px/1 var(--mono); }
+    .bar { height: 160px; display: grid; align-items: end; gap: 8px; text-align: center; color: var(--muted); font: 700 10px/1.2 var(--mono); }
+    .bar i { display: block; min-height: 4px; border-radius: 5px 5px 0 0; animation: grow .55s ease both; }
+    @keyframes grow { from { transform: scaleY(0); transform-origin: bottom; } to { transform: scaleY(1); transform-origin: bottom; } }
+    .heatmap { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .heat-cell { min-height: 74px; display: grid; align-content: center; gap: 4px; padding: 10px; border-radius: var(--radius); background: rgba(0, 191, 168, .10); border: 1px solid var(--line); }
+    .heat-cell.hot { background: rgba(223, 63, 69, .11); }
+    .heat-cell.warn { background: rgba(228, 155, 24, .13); }
+    .drop-zone {
+      min-height: 170px;
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      text-align: center;
+      border: 1px dashed rgba(0, 139, 126, .5);
+      border-radius: var(--radius);
+      background: rgba(0, 191, 168, .06);
+      padding: 20px;
+      cursor: pointer;
+    }
+    .progress { width: 100%; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+    .progress i { display: block; width: 0; height: 100%; background: var(--teal); transition: width .3s ease; }
+    .score-track { height: 8px; border-radius: 99px; overflow: hidden; background: var(--line); }
+    .score-fill { height: 100%; border-radius: 99px; background: var(--teal); transition: width .2s ease; }
+    .score-line { display: grid; grid-template-columns: 1fr 44px; gap: 10px; align-items: center; margin: 10px 0; }
+    .star { color: var(--line-2); font-size: 22px; padding: 1px; }
+    .star.on { color: var(--teal); }
+    .drawer-backdrop, .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(16, 32, 29, .30);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+    }
+    .drawer-backdrop.open, .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .drawer {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: min(1080px, 100vw);
+      overflow: auto;
+      background: var(--bg);
+      border-left: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      transform: translateX(100%);
+      transition: transform .22s ease;
+    }
+    .drawer-backdrop.open .drawer { transform: translateX(0); }
+    .drawer-head {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(247,250,249,.92);
+      backdrop-filter: blur(10px);
+    }
+    .drawer-body { padding: 18px; }
+    .modal-backdrop { display: grid; place-items: center; padding: 16px; }
+    .modal {
+      width: min(900px, 100%);
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      transform: scale(.97);
+      transition: transform .2s ease;
+    }
+    .modal-backdrop.open .modal { transform: scale(1); }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .modal-body { padding: 18px; }
+    .toast-stack { position: fixed; right: 16px; top: 16px; z-index: 2000; display: grid; gap: 10px; width: min(360px, calc(100vw - 32px)); }
+    .toast { padding: 13px 14px; border: 1px solid rgba(0,139,126,.22); border-radius: var(--radius); background: #f1fffc; box-shadow: var(--shadow-soft); animation: toastIn .18s ease both; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
+
+    @media (max-width: 940px) {
+      .hero-layout, .grid-2, .grid-3, .grid-4, .flow, .preview-grid { grid-template-columns: 1fr; }
+      .nav-links a { display: none; }
+      .nav-links {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        width: 100%;
+        max-width: calc(100vw - 32px);
+        overflow: visible;
+        gap: 8px;
+        padding-bottom: 2px;
+      }
+      .nav-links .btn {
+        min-width: 0;
+        width: 100%;
+      }
+      .nav-links .btn.primary {
+        grid-column: 1 / -1;
+      }
+      .site-nav .container { gap: 10px; }
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .mobile-tabs { display: flex; }
+      .content { padding: 14px; }
+      .module-head, .toolbar, .site-nav .container { flex-direction: column; align-items: flex-start; }
+      .app-top { align-items: flex-start; flex-direction: column; }
+      .hero { padding: 42px 0; }
+      .hero h1 {
+        max-width: 100%;
+        font-size: clamp(36px, 10vw, 44px);
+        line-height: 1;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      .hero p { max-width: 330px; font-size: 16px; }
+      .preview-top .badge { display: none; }
+      table { min-width: 900px; }
+      .heatmap { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div class="toast-stack" id="toasts"></div>
+  <div class="drawer-backdrop" id="drawerLayer"><aside class="drawer" id="drawer"></aside></div>
+  <div class="modal-backdrop" id="modalLayer"><div class="modal" id="modal"></div></div>
+
+  <script>
+    const copy = {
+      es: {
+        navProduct: "Producto", navFlow: "Flujo", navPricing: "Modelo", navContact: "Contacto", requestDemo: "Solicitar demo", launch: "Abrir plataforma",
+        heroKicker: "Maritime Financial Intelligence",
+        heroTitle: "Control financiero portuario sin fricción.",
+        heroText: "AidA automatiza la auditoría PDA/FDA, detecta sobrecostes, valida FX y convierte cada escala en datos accionables para armadores y operadores tramp.",
+        heroBadge1: "340+ puertos objetivo", heroBadge2: "OCR + revisión humana", heroBadge3: "Borradores de disputa, no envío automático",
+        previewTitle: "Torre de control AidA", kpi1: "PDAs analizadas", kpi2: "Ahorros recuperados", kpi3: "Disputas activas", kpi4: "Variación media",
+        valueTitle: "Una web clara para venderlo. Una plataforma completa para demostrarlo.",
+        valueText: "La experiencia está dividida en página comercial y aplicación interna. El botón Abrir plataforma activa la simulación completa.",
+        f1: "PDA/FDA Intelligence", f1t: "Ingesta OCR, comparación de proforma vs cuenta final, análisis FX y alertas IA.",
+        f2: "Agent Engine", f2t: "Directorio por país/puerto, ranking de proveedores, score y comparativa directa.",
+        f3: "Port Tariffs", f3t: "Base de datos de tarifas reales con Low, Avg, High y simulador de PDA.",
+        f4: "Queries & Disputes", f4t: "Borradores de reclamación, trazabilidad y notas de crédito que actualizan KPIs.",
+        flowTitle: "Ciclo de vida end-to-end",
+        upload: "Upload", pre: "Pre-análisis", audit: "Audit", action: "Action", resolution: "Resolution",
+        uploadT: "Carga PDA/FDA, Excel o voucher escaneado.", preT: "Cruce con tarifas, histórico y FX oficial.", auditT: "Insights IA priorizan riesgo y documentos faltantes.", actionT: "Aprobar limpio o generar disputa.", resolutionT: "Cerrar con nota de crédito o aceptación justificada.",
+        pricingTitle: "Modelo de entrada", pricingText: "Suscripción mensual por flota o volumen operativo, con upside comercial ligado al ahorro recuperado y al control administrativo.",
+        footer: "AidA by NPR Europa. We make sure shipowners never overpay port calls again.",
+        dashboard: "Dashboard", auditTab: "PDA/FDA", agents: "Agentes", tariffs: "Tarifas", disputes: "Disputas", analytics: "Analytics",
+        globalSearch: "Buscar buque, viaje, agente o puerto", bulkUpload: "Carga masiva", newFile: "Nuevo expediente", backWeb: "Volver web",
+        dashTitle: "Torre de control", dashText: "Salud económica de las operaciones, alertas activas y acciones rápidas.",
+        criticalKpis: "KPIs críticos", quickActions: "Acciones rápidas", activeAlerts: "Alertas activas", savingsTrend: "Tendencia de ahorros",
+        open: "Abrir", simulate: "Simular", export: "Exportar", uploadDocs: "Cargar documentos", createQuery: "Crear disputa",
+        auditTitle: "PDA / FDA Intelligence", auditText: "Lista operativa de escalas con riesgo, variación, FX y fondos enviados.",
+        vessel: "Buque", voyage: "Viaje", port: "Puerto", agent: "Agente", pda: "PDA", fda: "FDA", variance: "Variación", fx: "FX", funds: "Fondos", risk: "Riesgo", status: "Estado",
+        viewDetail: "Ver detalle", inReview: "En revisión", clean: "Limpio", disputed: "Disputado", awaitingPda: "Esperando PDA",
+        detail: "Detalle de escala", financialSummary: "Resumen financiero", charges: "Desglose de cargos", insights: "AI Insights", fundsRegistry: "Funds Sent Registry", rateAgent: "Evaluar agente",
+        approveClean: "Aprobar limpio", draftDispute: "Generar borrador disputa", requestVoucher: "Solicitar voucher", sendDraft: "Marcar borrador enviado",
+        agentsTitle: "Agent Engine", agentsText: "Ecosistema de proveedores con score, preferidos propios y mejores agentes de la red AidA.",
+        country: "País", preferred: "Preferidos propios", networkBest: "Mejores red AidA", profile: "Perfil", compare: "Comparar",
+        tariffsTitle: "Port Tariffs", tariffsText: "Benchmark de tarifas portuarias y simulador de PDA antes de recibir proforma oficial.",
+        low: "Low", avg: "Avg", high: "High", simulatePda: "Simular PDA", cargoType: "Tipo de carga", tonnage: "Tonelaje", estimate: "Estimar costes",
+        disputesTitle: "Queries & Disputes", disputesText: "Centro de resolución: hilos vinculados a Voyage ID, impacto económico y borradores IA.",
+        autoDraft: "Auto-draft Query", trace: "Trazabilidad", creditNote: "Nota de crédito", recovered: "Recuperado",
+        analyticsTitle: "Analytics ejecutivo", analyticsText: "Heatmaps, ranking de proveedores y ROI neto de la plataforma.",
+        heatmap: "Heatmap de desviaciones", supplierRank: "Ranking de proveedores", roi: "ROI de plataforma", downloadReport: "Descargar reporte",
+        step1: "Paso 1 — Carga OCR", step2: "Paso 2 — Validación", step3: "Paso 3 — Crear expedientes", dropText: "Arrastra documentos aquí o haz clic para simular OCR", next: "Siguiente", createFiles: "Crear expedientes", close: "Cerrar",
+        loading: "Leyendo documentos…", ocr1: "Detectando campos críticos…", ocr2: "Comparando tarifas y FX…", ocr3: "Generando insights IA…", complete: "Completo",
+        toastLaunch: "Plataforma AidA abierta.", toastLang: "Idioma cambiado.", toastExport: "Reporte demo generado.", toastDraft: "Borrador preparado para revisión humana.", toastApproved: "Escala aprobada y bloqueada.", toastUpload: "OCR completado. Datos extraídos y listos para validar.", toastCreated: "3 expedientes creados para PACIFIC HORN.", toastVoucher: "Solicitud de voucher preparada.", yes: "Sí", no: "No"
+      },
+      en: {
+        navProduct: "Product", navFlow: "Flow", navPricing: "Model", navContact: "Contact", requestDemo: "Request demo", launch: "Open platform",
+        heroKicker: "Maritime Financial Intelligence",
+        heroTitle: "Port-call financial control without friction.",
+        heroText: "AidA automates PDA/FDA auditing, detects overcharges, validates FX and turns every port call into actionable data for tramp owners and operators.",
+        heroBadge1: "340+ target ports", heroBadge2: "OCR + human review", heroBadge3: "Dispute drafts, no automatic sending",
+        previewTitle: "AidA control tower", kpi1: "PDAs analyzed", kpi2: "Savings recovered", kpi3: "Active disputes", kpi4: "Avg variance",
+        valueTitle: "A clean website to sell it. A complete platform to demo it.",
+        valueText: "The experience is split into a commercial website and an internal application. The Open platform button launches the full simulation.",
+        f1: "PDA/FDA Intelligence", f1t: "OCR ingestion, proforma vs final account comparison, FX analysis and AI alerts.",
+        f2: "Agent Engine", f2t: "Country/port directory, supplier ranking, score and direct comparison.",
+        f3: "Port Tariffs", f3t: "Real tariff database with Low, Avg, High and a PDA simulator.",
+        f4: "Queries & Disputes", f4t: "Claim drafts, traceability and credit notes that update KPIs.",
+        flowTitle: "End-to-end lifecycle",
+        upload: "Upload", pre: "Pre-analysis", audit: "Audit", action: "Action", resolution: "Resolution",
+        uploadT: "Upload PDA/FDA, Excel or scanned voucher.", preT: "Cross-check tariffs, history and official FX.", auditT: "AI insights prioritize risk and missing docs.", actionT: "Approve clean items or generate dispute.", resolutionT: "Close with credit note or justified acceptance.",
+        pricingTitle: "Entry model", pricingText: "Monthly subscription by fleet or operational volume, with commercial upside tied to recovered savings and administrative control.",
+        footer: "AidA by NPR Europa. We make sure shipowners never overpay port calls again.",
+        dashboard: "Dashboard", auditTab: "PDA/FDA", agents: "Agents", tariffs: "Tariffs", disputes: "Disputes", analytics: "Analytics",
+        globalSearch: "Search vessel, voyage, agent or port", bulkUpload: "Bulk upload", newFile: "New file", backWeb: "Back to site",
+        dashTitle: "Control tower", dashText: "Economic health of operations, active alerts and quick actions.",
+        criticalKpis: "Critical KPIs", quickActions: "Quick actions", activeAlerts: "Active alerts", savingsTrend: "Savings trend",
+        open: "Open", simulate: "Simulate", export: "Export", uploadDocs: "Upload documents", createQuery: "Create dispute",
+        auditTitle: "PDA / FDA Intelligence", auditText: "Operational list of port calls with risk, variance, FX and funds sent.",
+        vessel: "Vessel", voyage: "Voyage", port: "Port", agent: "Agent", pda: "PDA", fda: "FDA", variance: "Variance", fx: "FX", funds: "Funds", risk: "Risk", status: "Status",
+        viewDetail: "View detail", inReview: "In review", clean: "Clean", disputed: "Disputed", awaitingPda: "Awaiting PDA",
+        detail: "Port-call detail", financialSummary: "Financial summary", charges: "Charge breakdown", insights: "AI Insights", fundsRegistry: "Funds Sent Registry", rateAgent: "Rate agent",
+        approveClean: "Approve clean", draftDispute: "Generate dispute draft", requestVoucher: "Request voucher", sendDraft: "Mark draft sent",
+        agentsTitle: "Agent Engine", agentsText: "Supplier ecosystem with score, own preferred agents and AidA network best agents.",
+        country: "Country", preferred: "Own preferred", networkBest: "AidA network best", profile: "Profile", compare: "Compare",
+        tariffsTitle: "Port Tariffs", tariffsText: "Port tariff benchmark and PDA simulator before official proforma arrives.",
+        low: "Low", avg: "Avg", high: "High", simulatePda: "Simulate PDA", cargoType: "Cargo type", tonnage: "Tonnage", estimate: "Estimate costs",
+        disputesTitle: "Queries & Disputes", disputesText: "Resolution center: threads linked to Voyage ID, economic impact and AI drafts.",
+        autoDraft: "Auto-draft Query", trace: "Traceability", creditNote: "Credit note", recovered: "Recovered",
+        analyticsTitle: "Executive analytics", analyticsText: "Heatmaps, supplier ranking and net platform ROI.",
+        heatmap: "Deviation heatmap", supplierRank: "Supplier ranking", roi: "Platform ROI", downloadReport: "Download report",
+        step1: "Step 1 — OCR upload", step2: "Step 2 — Validation", step3: "Step 3 — Create files", dropText: "Drop documents here or click to simulate OCR", next: "Next", createFiles: "Create files", close: "Close",
+        loading: "Reading documents…", ocr1: "Detecting critical fields…", ocr2: "Comparing tariffs and FX…", ocr3: "Generating AI insights…", complete: "Complete",
+        toastLaunch: "AidA platform opened.", toastLang: "Language switched.", toastExport: "Demo report generated.", toastDraft: "Draft prepared for human review.", toastApproved: "Port call approved and locked.", toastUpload: "OCR complete. Data extracted and ready to validate.", toastCreated: "3 files created for PACIFIC HORN.", toastVoucher: "Voucher request prepared.", yes: "Yes", no: "No"
+      }
+    };
+
+    const baseCalls = [
+      { id: "MSC_CORONA", vessel: "MSC CORONA", voyage: "VY-2025-041", port: "Valencia", country: "Spain", agent: "Valencia Shipping Agents", pda: 18450, fda: 18950, variance: 2.7, fx: "OK", funds: 16000, risk: 6, status: "inReview", currency: "EUR", issues: ["Agency fee +25% vs network avg", "Agency fee invoice missing"], recovered: 500 },
+      { id: "MV_NORDVIK", vessel: "MV NORDVIK", voyage: "VY-2025-038", port: "Annaba", country: "Algeria", agent: "Algerie Port Services", pda: 2180000, fda: null, variance: 4.7, fx: "DZD risk", funds: 12000, risk: 9, status: "disputed", currency: "DZD", issues: ["FX spread 4.7% below official rate", "Agency fee +38%"], recovered: 1240 },
+      { id: "ATLANTIC_PIONEER", vessel: "ATLANTIC PIONEER", voyage: "VY-2025-035", port: "Iskenderun", country: "Türkiye", agent: "Iskenderun Maritime", pda: 12800, fda: 12800, variance: 0, fx: "OK", funds: 12800, risk: 2, status: "clean", currency: "USD", issues: ["No discrepancies"], recovered: 0 },
+      { id: "MARE_NOSTRUM", vessel: "MARE NOSTRUM", voyage: "VY-2025-043", port: "Thessaloniki", country: "Greece", agent: "Pending", pda: null, fda: null, variance: null, fx: "N/A", funds: 0, risk: 5, status: "awaitingPda", currency: "EUR", issues: ["PDA not received"], recovered: 0 },
+      { id: "RIO_GRANDE", vessel: "RIO GRANDE", voyage: "VY-2025-040", port: "Ravenna", country: "Italy", agent: "Adriatic Ship Services", pda: 17100, fda: null, variance: 1.8, fx: "OK", funds: 14000, risk: 4, status: "inReview", currency: "EUR", issues: ["Awaiting FDA"], recovered: 0 }
+    ];
+    const charges = [
+      { item: "Agency Fees", pda: 3200, fda: 3500, avg: 2560, conf: 96 },
+      { item: "Pilotage", pda: 1960, fda: 1960, avg: 1900, conf: 91 },
+      { item: "Towage", pda: 2900, fda: 2900, avg: 2800, conf: 88 },
+      { item: "Port Dues", pda: 3200, fda: 3200, avg: 3150, conf: 98 },
+      { item: "Mooring", pda: 620, fda: 820, avg: 580, conf: 84 }
+    ];
+    const agents = [
+      { name: "Valencia Shipping Agents", country: "Spain", port: "Valencia", score: 82, preferred: true, fee: "+12%", accuracy: 86, response: "3.2h", note: "Reliable, slower on FDA documentation." },
+      { name: "Algerie Port Services", country: "Algeria", port: "Annaba", score: 38, preferred: true, fee: "+38%", accuracy: 48, response: "18.7h", note: "Repeated FX spread issues." },
+      { name: "Hellenic Port Agency", country: "Greece", port: "Thessaloniki", score: 91, preferred: false, fee: "+3%", accuracy: 94, response: "1.8h", note: "Very fast weekend responses." },
+      { name: "Adriatic Ship Services", country: "Italy", port: "Ravenna", score: 70, preferred: true, fee: "+18%", accuracy: 76, response: "4.5h", note: "Good ops, agency fees trending high." },
+      { name: "Sines Atlantic Agency", country: "Portugal", port: "Sines", score: 78, preferred: false, fee: "+9%", accuracy: 82, response: "2.7h", note: "Balanced cost and service quality." }
+    ];
+    const tariffs = [
+      { port: "Valencia", item: "Agency Fee", low: 2100, avg: 2560, high: 3400 },
+      { port: "Valencia", item: "Pilotage", low: 860, avg: 950, high: 1150 },
+      { port: "Annaba", item: "Agency Fee", low: 380000, avg: 448000, high: 620000 },
+      { port: "Annaba", item: "Towage", low: 310000, avg: 370000, high: 430000 },
+      { port: "Ravenna", item: "Port Dues", low: 3700, avg: 4050, high: 4600 }
+    ];
+    const disputeThreads = [
+      { id: "Q-1041", call: "MSC CORONA · VY-2025-041", type: "Agency Fee", status: "Draft", impact: 500 },
+      { id: "Q-1038", call: "MV NORDVIK · VY-2025-038", type: "FX Spread", status: "Sent", impact: 1240 },
+      { id: "Q-1019", call: "CAPE VERDE · VY-2024-091", type: "Credit Note", status: "Recovered", impact: 720 }
+    ];
+
+    let state = { lang: "es", screen: "site", tab: "dashboard", calls: structuredClone(baseCalls), selectedCall: null, selectedCountry: "Spain", uploadStep: 0, tariffPort: "Valencia", rating: [0,0,0] };
+    const $ = (s, r=document) => r.querySelector(s);
+    const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+    const t = (key) => copy[state.lang][key] || key;
+    const money = (n, cur="EUR") => n == null ? "—" : `${cur} ${Number(n).toLocaleString("en-US")}`;
+    const riskClass = (risk) => risk >= 8 ? "high" : risk >= 5 ? "mid" : "";
+    const statusLabel = (s) => t(s);
+    const statusBadge = (s) => `<span class="badge ${s==="clean"?"green":s==="disputed"?"red":s==="awaitingPda"?"amber":"blue"}">${statusLabel(s)}</span>`;
+    const scoreColor = (v) => v > 84 ? "var(--green)" : v > 68 ? "var(--teal)" : v > 52 ? "var(--amber)" : "var(--red)";
+
+    function render() {
+      document.documentElement.lang = state.lang;
+      $("#root").innerHTML = state.screen === "site" ? renderSite() : renderApp();
+    }
+
+    function langToggle() {
+      return `<div class="lang-toggle"><button class="${state.lang==="es"?"active":""}" data-action="lang" data-lang="es">ES</button><button class="${state.lang==="en"?"active":""}" data-action="lang" data-lang="en">EN</button></div>`;
+    }
+
+    function brandButton(action="home") {
+      return `<button class="brand" data-action="${action}">
+        <span class="brand-logo">Ai</span><span>AidA<small>by NPR Europa</small></span>
+      </button>`;
+    }
+
+    function renderSite() {
+      return `<section>
+        <nav class="site-nav"><div class="container">${brandButton("home")}<div class="nav-links">
+          <a href="#product">${t("navProduct")}</a><a href="#flow">${t("navFlow")}</a><a href="#pricing">${t("navPricing")}</a><a href="#contact">${t("navContact")}</a>${langToggle()}
+          <button class="btn ghost" data-action="toast" data-toast="${t("requestDemo")}">${t("requestDemo")}</button><button class="btn primary" data-action="launch">${t("launch")}</button>
+        </div></div></nav>
+        <header class="hero"><div class="container hero-layout">
+          <div><p class="section-kicker">${t("heroKicker")}</p><h1>${t("heroTitle")}</h1><p>${t("heroText")}</p>
+            <div class="hero-actions"><button class="btn primary" data-action="launch">${t("launch")}</button><button class="btn ghost" data-action="newFile">${t("uploadDocs")}</button></div>
+            <div class="chip-row" style="margin-top:18px"><span class="pill green">${t("heroBadge1")}</span><span class="pill blue">${t("heroBadge2")}</span><span class="pill amber">${t("heroBadge3")}</span></div>
+          </div>
+          <div class="hero-preview">
+            <div class="preview-top"><strong>${t("previewTitle")}</strong><span class="badge green">Live demo</span></div>
+            <div class="preview-grid">
+              <div class="preview-kpi"><span>${t("kpi1")}</span><strong>148</strong></div><div class="preview-kpi"><span>${t("kpi2")}</span><strong>€42.8K</strong></div>
+              <div class="preview-kpi"><span>${t("kpi3")}</span><strong>7</strong></div><div class="preview-kpi"><span>${t("kpi4")}</span><strong>2.6%</strong></div>
+            </div>
+            <div class="preview-list">${state.calls.slice(0,3).map(c => `<div class="preview-row"><span><strong>${c.vessel}</strong><br><small class="muted">${c.port} · ${c.agent}</small></span><span class="risk ${riskClass(c.risk)}">${c.risk}</span></div>`).join("")}</div>
+          </div>
+        </div></header>
+        <section id="product" class="site-section"><div class="container"><p class="section-kicker">${t("navProduct")}</p><h2 class="section-title">${t("valueTitle")}</h2><p class="muted" style="max-width:760px">${t("valueText")}</p>
+          <div class="grid-4" style="margin-top:22px">${["f1","f2","f3","f4"].map((k,i)=>`<article class="card panel feature-card"><span class="badge ${["green","blue","gold","amber"][i]}">${i+1}</span><h3>${t(k)}</h3><p>${t(k+"t")}</p></article>`).join("")}</div>
+        </div></section>
+        <section id="flow" class="site-section"><div class="container"><p class="section-kicker">${t("navFlow")}</p><h2 class="section-title">${t("flowTitle")}</h2><div class="flow">${["upload","pre","audit","action","resolution"].map((k,i)=>`<div class="flow-step"><span>${i+1}</span><strong>${t(k)}</strong><p class="muted">${t(k+"T")}</p></div>`).join("")}</div></div></section>
+        <section id="pricing" class="site-section"><div class="container card panel"><p class="section-kicker">${t("navPricing")}</p><h2 class="section-title">${t("pricingTitle")}</h2><p class="muted">${t("pricingText")}</p><button class="btn primary" data-action="launch">${t("launch")}</button></div></section>
+        <footer id="contact"><div class="container">${t("footer")}</div></footer>
+      </section>`;
+    }
+
+    function renderApp() {
+      const tabs = [["dashboard","◌",t("dashboard")],["audit","◫",t("auditTab")],["agents","◎",t("agents")],["tariffs","▤",t("tariffs")],["disputes","✉",t("disputes")],["analytics","◇",t("analytics")]];
+      return `<section class="app">
+        <aside class="sidebar">${brandButton("site")}<nav class="side-nav">${tabs.map(tabButton).join("")}</nav><div class="chip-row">${langToggle()}<button class="btn" data-action="site">${t("backWeb")}</button></div></aside>
+        <main class="app-main">
+          <header class="app-top"><div class="field search"><input id="globalSearch" placeholder="${t("globalSearch")}"></div><div class="chip-row"><button class="btn ghost" data-action="newFile">${t("bulkUpload")}</button><button class="btn primary" data-action="newFile">${t("newFile")}</button></div></header>
+          <nav class="mobile-tabs">${tabs.map(tabButton).join("")}</nav>
+          <div class="content fade">${renderTab()}</div>
+        </main>
+      </section>`;
+      function tabButton(x) { return `<button class="${state.tab===x[0]?"active":""}" data-action="tab" data-tab="${x[0]}"><span>${x[1]}</span>${x[2]}</button>`; }
+    }
+
+    function moduleHead(title, text, actions="") {
+      return `<div class="module-head"><div><h1>${title}</h1><p>${text}</p></div><div class="chip-row">${actions}</div></div>`;
+    }
+
+    function renderTab() {
+      return ({ dashboard: renderDashboard, audit: renderAudit, agents: renderAgents, tariffs: renderTariffs, disputes: renderDisputes, analytics: renderAnalytics })[state.tab]();
+    }
+
+    function renderDashboard() {
+      const active = state.calls.filter(c => c.status !== "clean").length;
+      const recovered = state.calls.reduce((s,c)=>s+c.recovered,0);
+      return `${moduleHead(t("dashTitle"), t("dashText"), `<button class="btn ghost" data-action="newFile">${t("uploadDocs")}</button><button class="btn primary" data-action="tab" data-tab="audit">${t("open")} PDA/FDA</button>`)}
+      <div class="grid-4">
+        ${kpi(t("kpi1"), "148", "+18%")}
+        ${kpi(t("activeAlerts"), active, "7 high")}
+        ${kpi(t("kpi2"), `€${(recovered+42100).toLocaleString()}`, "+€3,240")}
+        ${kpi(t("kpi4"), "2.6%", "vs PDA")}
+      </div>
+      <div class="grid-2" style="margin-top:14px">
+        <section class="card panel"><h3>${t("activeAlerts")}</h3><div class="insight-feed">${state.calls.filter(c=>c.risk>=5).map(c=>`<div class="insight ${c.risk>=8?"red":"amber"}"><strong>${c.vessel} · ${c.port}</strong><p class="muted">${c.issues[0]}</p><button class="btn ghost" data-action="detail" data-id="${c.id}">${t("open")}</button></div>`).join("")}</div></section>
+        <section class="card panel"><h3>${t("savingsTrend")}</h3>${barChart([740, 920, 1280, 3240], ["Feb","Mar","Apr","May"], ["var(--teal)","var(--blue)","var(--amber)","var(--green)"], "€")}<div class="chip-row"><button class="btn" data-action="toast" data-toast="${t("toastExport")}">${t("export")}</button><button class="btn ghost" data-action="newFile">${t("simulate")}</button></div></section>
+      </div>`;
+    }
+
+    function kpi(label, value, hint) {
+      return `<div class="card kpi"><span>${label}</span><strong>${value}</strong><small class="muted">${hint}</small></div>`;
+    }
+
+    function renderAudit() {
+      return `${moduleHead(t("auditTitle"), t("auditText"), `<button class="btn ghost" data-action="newFile">${t("uploadDocs")}</button><button class="btn primary" data-action="newFile">${t("newFile")}</button>`)}
+        <div class="toolbar"><div class="toolbar-left"><input class="search" id="auditSearch" placeholder="${t("globalSearch")}"><button class="btn" data-action="filter" data-filter="all">${t("open")}</button><button class="btn" data-action="filter" data-filter="risk">High risk</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>${t("vessel")}</th><th>${t("voyage")}</th><th>${t("port")}</th><th>${t("agent")}</th><th>${t("pda")}</th><th>${t("fda")}</th><th>${t("variance")}</th><th>${t("fx")}</th><th>${t("funds")}</th><th>${t("risk")}</th><th>${t("status")}</th><th></th></tr></thead><tbody>
+          ${state.calls.map(c => `<tr class="clickable" data-action="detail" data-id="${c.id}"><td><strong>${c.vessel}</strong></td><td class="mono">${c.voyage}</td><td>${c.port}</td><td>${c.agent}</td><td>${money(c.pda,c.currency)}</td><td>${money(c.fda,c.currency)}</td><td>${c.variance==null?"—":c.variance+"%"}</td><td>${c.fx.includes("risk")?`<span class="badge gold">${c.fx}</span>`:`<span class="badge green">${c.fx}</span>`}</td><td>${money(c.funds,"USD")}</td><td><span class="risk ${riskClass(c.risk)}">${c.risk}</span></td><td>${statusBadge(c.status)}</td><td><button class="btn ghost">${t("viewDetail")}</button></td></tr>`).join("")}
+        </tbody></table></div>`;
+    }
+
+    function renderAgents() {
+      const own = agents.filter(a => a.preferred);
+      const best = [...agents].sort((a,b)=>b.score-a.score).slice(0,3);
+      return `${moduleHead(t("agentsTitle"), t("agentsText"), `<select id="countrySelect">${["Spain","Algeria","Greece","Italy","Portugal"].map(c=>`<option ${state.selectedCountry===c?"selected":""}>${c}</option>`).join("")}</select><button class="btn ghost" data-action="toast" data-toast="${t("toastExport")}">${t("export")}</button>`)}
+        <div class="grid-2"><section class="card panel"><h3>${t("preferred")}</h3>${agentCards(own)}</section><section class="card panel"><h3>${t("networkBest")}</h3>${agentCards(best)}</section></div>`;
+    }
+
+    function agentCards(list) {
+      return `<div class="insight-feed">${list.map(a=>`<div class="card panel" style="box-shadow:none;border-left:4px solid ${scoreColor(a.score)}"><div class="toolbar"><div><strong>${a.name}</strong><p class="muted">${a.port}, ${a.country} · ${a.note}</p></div><span class="risk ${riskClass(10-a.score/10)}" style="background:${scoreColor(a.score)}">${a.score}</span></div>
+        ${scoreLine("Accuracy", a.accuracy)}${scoreLine("Response", Math.max(20,100-parseFloat(a.response)*4))}<div class="chip-row"><span class="badge amber">${a.fee}</span><button class="btn ghost" data-action="agentProfile" data-agent="${a.name}">${t("profile")}</button><button class="btn" data-action="toast" data-toast="${t("compare")}">${t("compare")}</button></div></div>`).join("")}</div>`;
+    }
+
+    function scoreLine(label, value) {
+      return `<div class="score-line"><div><div class="muted">${label}</div><div class="score-track"><div class="score-fill" style="width:${value}%;background:${scoreColor(value)}"></div></div></div><strong class="mono">${Math.round(value)}</strong></div>`;
+    }
+
+    function renderTariffs() {
+      const rows = tariffs.filter(x => x.port === state.tariffPort);
+      const total = rows.reduce((s,r)=>s+r.avg,0);
+      return `${moduleHead(t("tariffsTitle"), t("tariffsText"), `<select id="tariffPort">${[...new Set(tariffs.map(x=>x.port))].map(p=>`<option ${state.tariffPort===p?"selected":""}>${p}</option>`).join("")}</select><button class="btn primary" data-action="simulateTariff">${t("simulatePda")}</button>`)}
+      <div class="grid-2"><section class="card panel"><h3>${state.tariffPort}</h3><div class="table-wrap"><table><thead><tr><th>Item</th><th>${t("low")}</th><th>${t("avg")}</th><th>${t("high")}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.item}</td><td>${money(r.low)}</td><td><strong>${money(r.avg)}</strong></td><td>${money(r.high)}</td></tr>`).join("")}</tbody></table></div></section>
+      <section class="card panel"><h3>${t("simulatePda")}</h3><div class="grid-2"><div class="field"><label>${t("cargoType")}</label><select><option>Bulk Wheat</option><option>Break Bulk</option><option>Tanker</option></select></div><div class="field"><label>${t("tonnage")}</label><input value="28,500 MT"></div></div><button class="btn primary" style="margin-top:12px" data-action="simulateTariff">${t("estimate")}</button><div id="tariffResult" class="insight green" style="margin-top:12px"><strong>${t("avg")} PDA</strong><p class="muted">${money(total || 12200)} · Confidence 82%</p></div></section></div>`;
+    }
+
+    function renderDisputes() {
+      return `${moduleHead(t("disputesTitle"), t("disputesText"), `<button class="btn primary" data-action="draft">${t("autoDraft")}</button>`)}
+      <div class="grid-3">${disputeThreads.map(d=>`<section class="card panel"><span class="badge ${d.status==="Recovered"?"green":d.status==="Sent"?"blue":"amber"}">${d.status}</span><h3>${d.id}</h3><p class="muted">${d.call}<br>${d.type}</p><strong>${t("recovered")}: €${d.impact.toLocaleString()}</strong><div class="chip-row" style="margin-top:12px"><button class="btn ghost" data-action="draft">${t("autoDraft")}</button><button class="btn" data-action="toast" data-toast="${t("trace")}">${t("trace")}</button></div></section>`).join("")}</div>
+      <section class="card panel" style="margin-top:14px"><h3>${t("autoDraft")}</h3><textarea>Dear Agent,\n\nAidA has identified discrepancies linked to voyage VY-2025-041. Please provide supporting invoices or issue a revised FDA / credit note.\n\nBest regards,\nNPR Europa Disbursements Desk</textarea><button class="btn primary" data-action="draft">${t("sendDraft")}</button></section>`;
+    }
+
+    function renderAnalytics() {
+      return `${moduleHead(t("analyticsTitle"), t("analyticsText"), `<button class="btn ghost" data-action="toast" data-toast="${t("toastExport")}">${t("downloadReport")}</button>`)}
+      <div class="grid-2"><section class="card panel"><h3>${t("heatmap")}</h3><div class="heatmap">${["Valencia","Annaba","Ravenna","Sines","Iskenderun","Thessaloniki","Algiers","Tunis","Constanta","Bilbao"].map((p,i)=>`<div class="heat-cell ${i===1||i===6?"hot":i===2||i===7?"warn":""}"><strong>${p}</strong><span class="muted">${(1.2+i*.7).toFixed(1)}% var</span></div>`).join("")}</div></section>
+      <section class="card panel"><h3>${t("roi")}</h3>${barChart([2400, 5200, 9600, 18400], ["Q1","Q2","Q3","Q4"], ["var(--blue)","var(--teal)","var(--amber)","var(--green)"], "€")}<div class="grid-2"><div class="kpi card"><span>${t("roi")}</span><strong>6.8x</strong></div><div class="kpi card"><span>${t("supplierRank")}</span><strong>Hellenic #1</strong></div></div></section></div>`;
+    }
+
+    function barChart(values, labels, colors, prefix="") {
+      const max = Math.max(...values) * 1.16;
+      return `<div class="bar-chart"><div class="bar-y"><span>${prefix}${Math.round(max).toLocaleString()}</span><span>${prefix}${Math.round(max/2).toLocaleString()}</span><span>0</span></div>${values.map((v,i)=>`<div class="bar"><i style="height:${Math.max(4,(v/max)*160)}px;background:${colors[i]}"></i><small>${labels[i]}<br>${Number(v).toLocaleString()}</small></div>`).join("")}</div>`;
+    }
+
+    function openCallDetail(id) {
+      const c = state.calls.find(x=>x.id===id);
+      state.selectedCall = c;
+      $("#drawer").innerHTML = `<div class="drawer-head"><div><strong>${t("detail")} · ${c.vessel}</strong><div class="muted">${c.voyage} · ${c.port} · ${c.agent}</div></div><button class="icon-btn" data-action="close">×</button></div>
+      <div class="drawer-body">
+        <div class="grid-3">
+          <section class="card panel"><h3>${t("financialSummary")}</h3>${kpi(t("pda"), money(c.pda,c.currency), "PDA")}${kpi(t("fda"), money(c.fda,c.currency), "FDA")}${kpi(t("variance"), c.variance==null?"—":c.variance+"%", "vs PDA")}<div class="insight ${c.fx.includes("risk")?"red":"green"}"><strong>FX Analysis</strong><p class="muted">${c.fx.includes("risk")?"Agent rate 128.40 DZD/USD vs official 134.75. Hidden spread estimated at USD 1,240.":"No FX risk detected for this call."}</p></div></section>
+          <section class="card panel"><h3>${t("charges")}</h3><div class="table-wrap"><table><thead><tr><th>Item</th><th>PDA</th><th>FDA</th><th>Avg</th><th>OCR</th></tr></thead><tbody>${charges.map(x=>`<tr><td>${x.item}</td><td>${money(x.pda)}</td><td>${money(x.fda)}</td><td>${money(x.avg)}</td><td>${x.conf}%</td></tr>`).join("")}</tbody></table></div></section>
+          <section class="card panel"><h3>${t("insights")}</h3><div class="insight-feed">${c.issues.map((i,idx)=>`<div class="insight ${idx===0&&c.risk>=8?"red":"amber"}"><strong>${i}</strong><p class="muted">AidA confidence ${idx?82:94}%</p></div>`).join("")}</div><div class="chip-row" style="margin-top:12px"><button class="btn primary" data-action="approve">${t("approveClean")}</button><button class="btn danger" data-action="draft">${t("draftDispute")}</button><button class="btn ghost" data-action="voucher">${t("requestVoucher")}</button></div></section>
+        </div>
+        <div class="grid-2" style="margin-top:14px"><section class="card panel"><h3>${t("fundsRegistry")}</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th>Amount</th><th>Ref</th></tr></thead><tbody><tr><td>2025-06-13</td><td>${money(c.funds,"USD")}</td><td>WIRE-${c.voyage.slice(-3)}</td></tr><tr><td>2025-06-17</td><td>${money(2400,"USD")}</td><td>PENDING</td></tr></tbody></table></div></section>
+        <section class="card panel"><h3>${t("rateAgent")}</h3>${[0,1,2].map(i=>`<div class="toolbar"><span>${["Service","Communication","Competitiveness"][i]}</span><span>${[1,2,3,4,5].map(n=>`<button class="star ${state.rating[i]>=n?"on":""}" data-action="star" data-row="${i}" data-star="${n}">★</button>`).join("")}</span></div>`).join("")}<textarea placeholder="Notes">${agents.find(a=>a.name===c.agent)?.note || ""}</textarea><button class="btn primary" data-action="toast" data-toast="${t("rateAgent")} OK">${t("rateAgent")}</button></section></div>
+      </div>`;
+      $("#drawerLayer").classList.add("open");
+      document.body.classList.add("modal-open");
+    }
+
+    function openNewFile() {
+      state.uploadStep = 0;
+      $("#modal").innerHTML = `<div class="modal-head"><div><strong>${t("newFile")}</strong><div class="muted">${t("step1")}</div></div><button class="icon-btn" data-action="close">×</button></div><div class="modal-body" id="newFileBody">${uploadBody()}</div>`;
+      $("#modalLayer").classList.add("open");
+      document.body.classList.add("modal-open");
+    }
+
+    function uploadBody(done=false) {
+      if (!done) return `<div class="drop-zone" data-action="startOcr"><strong>${t("dropText")}</strong><div class="progress hidden"><i></i></div><span class="muted mono" id="ocrLabel"></span></div>`;
+      return `<h3>${t("step2")}</h3><div class="grid-2">${[["Vessel","PACIFIC HORN"],["Voyage","VY-2025-047"],["Loading Port","Constanta"],["1st Discharge","Algiers"],["2nd Discharge","Tunis"],["Cargo","Bulk Wheat"]].map(f=>`<div class="field"><label>${f[0]}</label><input value="${f[1]}"></div>`).join("")}</div><div class="chip-row" style="margin-top:14px"><button class="btn primary" data-action="createFiles">${t("createFiles")}</button></div>`;
+    }
+
+    function showToast(message) {
+      const el = document.createElement("div");
+      el.className = "toast";
+      el.textContent = message;
+      const stack = $("#toasts");
+      while (stack.children.length >= 3) stack.firstElementChild.remove();
+      stack.appendChild(el);
+      setTimeout(()=>el.remove(), 3500);
+    }
+
+    function closeOverlays() {
+      $("#drawerLayer").classList.remove("open");
+      $("#modalLayer").classList.remove("open");
+      document.body.classList.remove("modal-open");
+    }
+
+    function startOcr(zone) {
+      const steps = [t("loading"), t("ocr1"), t("ocr2"), t("ocr3"), t("complete")];
+      const bar = $(".progress", zone), fill = $(".progress i", zone), label = $("#ocrLabel");
+      bar.classList.remove("hidden");
+      let i = 0;
+      const tick = () => {
+        label.textContent = steps[i];
+        fill.style.width = `${(i+1)*20}%`;
+        i++;
+        if (i < steps.length) setTimeout(tick, 520);
+        else setTimeout(()=>{ $("#newFileBody").innerHTML = uploadBody(true); showToast(t("toastUpload")); }, 350);
+      };
+      tick();
+    }
+
+    document.addEventListener("click", (e) => {
+      const target = e.target.closest("[data-action]");
+      if (!target) return;
+      const action = target.dataset.action;
+      if (action === "lang") { state.lang = target.dataset.lang; render(); showToast(t("toastLang")); return; }
+      if (action === "launch") { state.screen = "app"; state.tab = "dashboard"; render(); showToast(t("toastLaunch")); return; }
+      if (action === "site" || action === "home") { state.screen = "site"; closeOverlays(); render(); return; }
+      if (action === "tab") { state.tab = target.dataset.tab; render(); return; }
+      if (action === "detail") { openCallDetail(target.dataset.id); return; }
+      if (action === "close") { closeOverlays(); return; }
+      if (action === "newFile") { openNewFile(); return; }
+      if (action === "startOcr") { startOcr(target); return; }
+      if (action === "createFiles") {
+        state.calls.push({ id:"PACIFIC_HORN_A", vessel:"PACIFIC HORN", voyage:"VY-2025-047", port:"Constanta", country:"Romania", agent:"Pending", pda:null, fda:null, variance:null, fx:"N/A", funds:0, risk:5, status:"awaitingPda", currency:"EUR", issues:["PDA not received"], recovered:0 });
+        state.calls.push({ id:"PACIFIC_HORN_B", vessel:"PACIFIC HORN", voyage:"VY-2025-047", port:"Algiers", country:"Algeria", agent:"Pending", pda:null, fda:null, variance:null, fx:"DZD risk", funds:0, risk:8, status:"awaitingPda", currency:"DZD", issues:["Local currency FX risk"], recovered:0 });
+        state.calls.push({ id:"PACIFIC_HORN_C", vessel:"PACIFIC HORN", voyage:"VY-2025-047", port:"Tunis", country:"Tunisia", agent:"Pending", pda:null, fda:null, variance:null, fx:"N/A", funds:0, risk:6, status:"awaitingPda", currency:"EUR", issues:["Agent nomination pending"], recovered:0 });
+        closeOverlays(); state.tab = "audit"; render(); showToast(t("toastCreated")); return;
+      }
+      if (action === "approve") { if (state.selectedCall) state.selectedCall.status = "clean"; closeOverlays(); render(); showToast(t("toastApproved")); return; }
+      if (action === "draft") { showToast(t("toastDraft")); return; }
+      if (action === "voucher") { showToast(t("toastVoucher")); return; }
+      if (action === "toast") { showToast(target.dataset.toast || "OK"); return; }
+      if (action === "agentProfile") { const a = agents.find(x=>x.name===target.dataset.agent); showToast(`${a.name}: ${a.note}`); return; }
+      if (action === "simulateTariff") { showToast(`${t("simulatePda")}: ${money(12200)} · confidence 82%`); return; }
+      if (action === "star") { state.rating[Number(target.dataset.row)] = Number(target.dataset.star); if (state.selectedCall) openCallDetail(state.selectedCall.id); return; }
+    });
+
+    document.addEventListener("change", (e) => {
+      if (e.target.id === "tariffPort") { state.tariffPort = e.target.value; render(); }
+      if (e.target.id === "countrySelect") { state.selectedCountry = e.target.value; render(); }
+    });
+
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeOverlays(); });
+    render();
+  </script>
+</body>
+</html>

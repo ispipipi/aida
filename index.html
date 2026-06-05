@@ -342,6 +342,117 @@
     .heat-cell { min-height: 74px; display: grid; align-content: center; gap: 4px; padding: 10px; border-radius: var(--radius); background: rgba(0, 191, 168, .10); border: 1px solid var(--line); }
     .heat-cell.hot { background: rgba(223, 63, 69, .11); }
     .heat-cell.warn { background: rgba(228, 155, 24, .13); }
+    .app-stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .app-stat {
+      min-height: 82px;
+      display: grid;
+      align-content: center;
+      gap: 5px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+    }
+    .app-stat span { color: var(--muted); font: 700 10px/1.2 var(--mono); text-transform: uppercase; }
+    .app-stat strong { font-size: 24px; letter-spacing: -.03em; }
+    .status-dot { display: inline-flex; align-items: center; gap: 7px; }
+    .vessel-name { min-width: 170px; }
+    .file-actions { display: flex; gap: 7px; justify-content: flex-end; }
+    .modal.wide { width: min(1180px, 100%); }
+    .vessel-tabs {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding: 12px 18px 0;
+      border-bottom: 1px solid var(--line);
+      background: #fbfdfc;
+    }
+    .vessel-tabs button {
+      flex: 0 0 auto;
+      padding: 10px 12px;
+      border: 1px solid transparent;
+      border-bottom: 0;
+      border-radius: var(--radius) var(--radius) 0 0;
+      color: var(--muted);
+      font-weight: 800;
+      background: transparent;
+    }
+    .vessel-tabs button.active {
+      color: var(--ink);
+      background: var(--paper);
+      border-color: var(--line);
+    }
+    .mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .mini-card {
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+    }
+    .mini-card span { display: block; color: var(--muted); font: 700 10px/1 var(--mono); text-transform: uppercase; }
+    .mini-card strong { display: block; margin-top: 6px; }
+    .file-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfdfc;
+      margin-bottom: 12px;
+    }
+    .voucher-list, .doc-list, .mail-list, .rating-list { display: grid; gap: 9px; }
+    .voucher-row, .doc-row, .mail-row, .rating-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+    }
+    .mail-row { grid-template-columns: auto 1fr auto; }
+    .yesno { display: inline-flex; gap: 5px; padding: 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper-2); }
+    .yesno button {
+      min-width: 38px;
+      min-height: 28px;
+      border-radius: 999px;
+      color: var(--muted);
+      font: 700 11px/1 var(--mono);
+    }
+    .yesno button.active { color: white; background: var(--ink); }
+    .score-circle {
+      width: 104px;
+      height: 104px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      border: 9px solid rgba(0, 191, 168, .16);
+      background: conic-gradient(var(--teal) 0 72%, var(--line) 72% 100%);
+    }
+    .score-circle strong {
+      width: 74px;
+      height: 74px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--paper);
+      font-size: 28px;
+    }
+    .fx-trend {
+      width: 100%;
+      height: 150px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #fff, var(--paper-2));
+    }
     .drop-zone {
       min-height: 170px;
       display: grid;
@@ -456,6 +567,9 @@
       .preview-top .badge { display: none; }
       table { min-width: 900px; }
       .heatmap { grid-template-columns: 1fr 1fr; }
+      .app-stats, .mini-grid { grid-template-columns: 1fr 1fr; }
+      .file-bar, .voucher-row, .doc-row, .rating-row { grid-template-columns: 1fr; }
+      .mail-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -550,11 +664,12 @@
     };
 
     const baseCalls = [
-      { id: "MSC_CORONA", vessel: "MSC CORONA", voyage: "VY-2025-041", port: "Valencia", country: "Spain", agent: "Valencia Shipping Agents", pda: 18450, fda: 18950, variance: 2.7, fx: "OK", funds: 16000, risk: 6, status: "inReview", currency: "EUR", issues: ["Agency fee +25% vs network avg", "Agency fee invoice missing"], recovered: 500 },
-      { id: "MV_NORDVIK", vessel: "MV NORDVIK", voyage: "VY-2025-038", port: "Annaba", country: "Algeria", agent: "Algerie Port Services", pda: 2180000, fda: null, variance: 4.7, fx: "DZD risk", funds: 12000, risk: 9, status: "disputed", currency: "DZD", issues: ["FX spread 4.7% below official rate", "Agency fee +38%"], recovered: 1240 },
-      { id: "ATLANTIC_PIONEER", vessel: "ATLANTIC PIONEER", voyage: "VY-2025-035", port: "Iskenderun", country: "Türkiye", agent: "Iskenderun Maritime", pda: 12800, fda: 12800, variance: 0, fx: "OK", funds: 12800, risk: 2, status: "clean", currency: "USD", issues: ["No discrepancies"], recovered: 0 },
-      { id: "MARE_NOSTRUM", vessel: "MARE NOSTRUM", voyage: "VY-2025-043", port: "Thessaloniki", country: "Greece", agent: "Pending", pda: null, fda: null, variance: null, fx: "N/A", funds: 0, risk: 5, status: "awaitingPda", currency: "EUR", issues: ["PDA not received"], recovered: 0 },
-      { id: "RIO_GRANDE", vessel: "RIO GRANDE", voyage: "VY-2025-040", port: "Ravenna", country: "Italy", agent: "Adriatic Ship Services", pda: 17100, fda: null, variance: 1.8, fx: "OK", funds: 14000, risk: 4, status: "inReview", currency: "EUR", issues: ["Awaiting FDA"], recovered: 0 }
+      { id: "MSC_CORONA", vessel: "MSC CORONA", voyage: "VY-2025-041", operation: "Bulk wheat discharge", port: "Valencia", country: "Spain", agent: "Valencia Shipping Agents", eta: "2025-06-12", etd: "2025-06-15", pda: 23240, fda: 23740, variance: 2.2, fx: "OK", funds: 21000, risk: 7, status: "inReview", pdaStatus: "PDA approved", fdaStatus: "FDA issue", currency: "EUR", pdaLoaded: true, fdaLoaded: true, vouchers: [true,true,true,true,true,true,false,"mismatch"], issues: ["Agency fee +25% vs network average", "Mooring voucher amount does not match FDA", "Agency fee invoice missing"], recovered: 500 },
+      { id: "MV_NORDVIK", vessel: "MV NORDVIK", voyage: "VY-2025-038", operation: "Steel coils discharge", port: "Annaba", country: "Algeria", agent: "Algerie Port Services", eta: "2025-06-18", etd: "2025-06-21", pda: 2180000, fda: null, variance: 4.7, fx: "DZD risk", funds: 12000, risk: 9, status: "disputed", pdaStatus: "PDA query", fdaStatus: "Awaiting FDA", currency: "DZD", pdaLoaded: true, fdaLoaded: false, vouchers: [true,true,true,true,true,false,false,false], issues: ["Agent FX rate 128.40 vs official 134.75 DZD/USD", "Hidden FX overcharge estimated at USD 1,240", "Agency fee +38% vs Algeria benchmark"], recovered: 1240 },
+      { id: "ATLANTIC_PIONEER", vessel: "ATLANTIC PIONEER", voyage: "VY-2025-035", operation: "Containers", port: "Iskenderun", country: "Türkiye", agent: "Iskenderun Maritime", eta: "2025-06-08", etd: "2025-06-10", pda: 12800, fda: 12800, variance: 0, fx: "OK", funds: 12800, risk: 2, status: "clean", pdaStatus: "PDA approved", fdaStatus: "FDA closed", currency: "USD", pdaLoaded: true, fdaLoaded: true, vouchers: [true,true,true,true,true,true,true,true], issues: ["No discrepancies"], recovered: 0 },
+      { id: "MARE_NOSTRUM", vessel: "MARE NOSTRUM", voyage: "VY-2025-043", operation: "Grain discharge", port: "Thessaloniki", country: "Greece", agent: "Pending", eta: "2025-06-24", etd: "2025-06-27", pda: null, fda: null, variance: null, fx: "N/A", funds: 0, risk: 5, status: "awaitingPda", pdaStatus: "Awaiting PDA", fdaStatus: "Not started", currency: "EUR", pdaLoaded: false, fdaLoaded: false, vouchers: [false,false,false,false,false,false,false,false], issues: ["PDA not received", "Agent nomination pending"], recovered: 0 },
+      { id: "RIO_GRANDE", vessel: "RIO GRANDE", voyage: "VY-2025-040", operation: "Project cargo", port: "Ravenna", country: "Italy", agent: "Adriatic Ship Services", eta: "2025-06-16", etd: "2025-06-19", pda: 17100, fda: null, variance: 1.8, fx: "OK", funds: 14000, risk: 4, status: "inReview", pdaStatus: "PDA approved", fdaStatus: "Awaiting FDA", currency: "EUR", pdaLoaded: true, fdaLoaded: false, vouchers: [true,true,true,true,false,false,false,false], issues: ["Awaiting FDA", "Agency fees trending high in Ravenna"], recovered: 0 },
+      { id: "NORDIC_STAR", vessel: "NORDIC STAR", voyage: "VY-2025-044", operation: "Feed barley discharge", port: "Tunis", country: "Tunisia", agent: "Tunis Marine Desk", eta: "2025-06-26", etd: "2025-06-29", pda: 15400, fda: null, variance: null, fx: "N/A", funds: 9000, risk: 5, status: "inReview", pdaStatus: "PDA review", fdaStatus: "Not started", currency: "EUR", pdaLoaded: true, fdaLoaded: false, vouchers: [true,true,false,false,false,false,false,false], issues: ["Port tariff confidence low", "Waiting voucher pack"], recovered: 0 }
     ];
     const charges = [
       { item: "Agency Fees", pda: 3200, fda: 3500, avg: 2560, conf: 96 },
@@ -583,10 +698,11 @@
       { id: "Q-1019", call: "CAPE VERDE · VY-2024-091", type: "Credit Note", status: "Recovered", impact: 720 }
     ];
 
-    let state = { lang: "es", screen: "site", tab: "dashboard", calls: structuredClone(baseCalls), selectedCall: null, selectedCountry: "Spain", uploadStep: 0, tariffPort: "Valencia", rating: [0,0,0] };
+    let state = { lang: "es", screen: "site", tab: "fileboard", calls: structuredClone(baseCalls), selectedCall: null, selectedCountry: "Spain", uploadStep: 0, tariffPort: "Valencia", rating: [0,0,0], rating6: [0,0,0,0,0,0], vesselTab: "nomination", fileFilter: "all" };
     const $ = (s, r=document) => r.querySelector(s);
     const $$ = (s, r=document) => [...r.querySelectorAll(s)];
     const t = (key) => copy[state.lang][key] || key;
+    const s = (es, en) => state.lang === "es" ? es : en;
     const money = (n, cur="EUR") => n == null ? "—" : `${cur} ${Number(n).toLocaleString("en-US")}`;
     const riskClass = (risk) => risk >= 8 ? "high" : risk >= 5 ? "mid" : "";
     const statusLabel = (s) => t(s);
@@ -638,11 +754,11 @@
     }
 
     function renderApp() {
-      const tabs = [["dashboard","◌",t("dashboard")],["audit","◫",t("auditTab")],["agents","◎",t("agents")],["tariffs","▤",t("tariffs")],["disputes","✉",t("disputes")],["analytics","◇",t("analytics")]];
+      const tabs = [["fileboard","▦",s("File Board","File Board")],["dashboard","◌",t("dashboard")],["analytics","◇",t("analytics")],["agents","◎",t("agents")],["tariffs","▤",t("tariffs")],["disputes","✉",t("disputes")]];
       return `<section class="app">
         <aside class="sidebar">${brandButton("site")}<nav class="side-nav">${tabs.map(tabButton).join("")}</nav><div class="chip-row">${langToggle()}<button class="btn" data-action="site">${t("backWeb")}</button></div></aside>
         <main class="app-main">
-          <header class="app-top"><div class="field search"><input id="globalSearch" placeholder="${t("globalSearch")}"></div><div class="chip-row"><button class="btn ghost" data-action="newFile">${t("bulkUpload")}</button><button class="btn primary" data-action="newFile">${t("newFile")}</button></div></header>
+          <header class="app-top"><div class="field search"><input id="globalSearch" placeholder="${t("globalSearch")}"></div><div class="chip-row"><span class="badge red"><span class="dot red pulse"></span>3</span><strong>NPR Europa</strong><button class="btn ghost" data-action="newFile">${t("bulkUpload")}</button><button class="btn primary" data-action="newFile">+ ${t("newFile")}</button></div></header>
           <nav class="mobile-tabs">${tabs.map(tabButton).join("")}</nav>
           <div class="content fade">${renderTab()}</div>
         </main>
@@ -655,7 +771,58 @@
     }
 
     function renderTab() {
-      return ({ dashboard: renderDashboard, audit: renderAudit, agents: renderAgents, tariffs: renderTariffs, disputes: renderDisputes, analytics: renderAnalytics })[state.tab]();
+      return ({ fileboard: renderFileBoard, dashboard: renderDashboard, audit: renderAudit, agents: renderAgents, tariffs: renderTariffs, disputes: renderDisputes, analytics: renderAnalytics })[state.tab]();
+    }
+
+    function renderFileBoard() {
+      const filterLabels = [
+        ["all", s("Todos", "All")],
+        ["awaitingPda", s("Esperando PDA", "Awaiting PDA")],
+        ["inPort", s("En puerto", "In Port")],
+        ["fdaReview", s("FDA Review", "FDA Review")],
+        ["closed", s("Cerrados", "Closed")]
+      ];
+      const visible = state.calls.filter(c => {
+        if (state.fileFilter === "awaitingPda") return c.status === "awaitingPda";
+        if (state.fileFilter === "fdaReview") return c.fdaStatus && c.fdaStatus.includes("FDA");
+        if (state.fileFilter === "closed") return c.status === "clean";
+        if (state.fileFilter === "inPort") return c.status !== "clean" && c.status !== "awaitingPda";
+        return true;
+      });
+      return `${appStats()}
+        ${moduleHead(s("File Board operativo", "Operational File Board"), s("Expedientes por nave y viaje con PDA, FDA, vouchers, FX, agente y acciones de cierre.", "Vessel and voyage files with PDA, FDA, vouchers, FX, agent and close-out actions."), `<button class="btn ghost" data-action="newFile">${t("uploadDocs")}</button><button class="btn primary" data-action="newFile">+ ${t("newFile")}</button>`)}
+        <section class="card panel">
+          <div class="toolbar"><div class="toolbar-left"><input class="search" placeholder="${t("globalSearch")}">${filterLabels.map(f=>`<button class="btn ${state.fileFilter===f[0]?"primary":""}" data-action="fileFilter" data-filter="${f[0]}">${f[1]}</button>`).join("")}</div><button class="btn ghost" data-action="toast" data-toast="${t("toastExport")}">${t("export")}</button></div>
+          <div class="table-wrap"><table><thead><tr><th>${t("vessel")}</th><th>${t("voyage")}</th><th>${s("Operación","Operation")}</th><th>${t("port")}</th><th>ETA/ATA</th><th>ETD/ATD</th><th>${s("Moneda","Currency")}</th><th>${t("pda")}</th><th>${t("fda")}</th><th>${t("status")}</th><th>${s("Acciones","Actions")}</th></tr></thead><tbody>
+            ${visible.map(c => `<tr class="clickable" data-action="vessel" data-id="${c.id}">
+              <td class="vessel-name"><strong>${c.vessel}</strong><br><small class="muted">${c.agent}</small></td><td class="mono">${c.voyage}</td><td>${c.operation}</td><td>${c.port}</td><td>${c.eta}</td><td>${c.etd}</td><td>${c.currency}</td>
+              <td>${statusPill(c.pdaStatus, c.pdaLoaded ? "green" : "amber")}</td><td>${statusPill(c.fdaStatus, c.fdaLoaded ? (c.risk > 6 ? "red" : "green") : "amber")}</td><td>${statusBadge(c.status)}</td>
+              <td><div class="file-actions"><button class="btn ghost" data-action="vessel" data-id="${c.id}">${t("open")}</button></div></td>
+            </tr>`).join("")}
+          </tbody></table></div>
+        </section>`;
+    }
+
+    function appStats() {
+      const active = state.calls.filter(c => c.status !== "clean").length;
+      const awaiting = state.calls.filter(c => c.status === "awaitingPda").length;
+      const fdaIssues = state.calls.filter(c => c.fdaLoaded && c.risk >= 6).length;
+      const closed = state.calls.filter(c => c.status === "clean").length + 11;
+      return `<div class="app-stats">
+        ${appStat(s("Viajes activos","Active voyages"), active)}
+        ${appStat(s("Esperando PDA","Awaiting PDA"), awaiting)}
+        ${appStat(s("FDA con issues","FDA issues"), fdaIssues)}
+        ${appStat(s("Ahorro este mes","Saved this month"), "$4.2K")}
+        ${appStat(s("Cerrados este mes","Closed this month"), closed)}
+      </div>`;
+    }
+
+    function appStat(label, value) {
+      return `<div class="app-stat"><span>${label}</span><strong>${value}</strong></div>`;
+    }
+
+    function statusPill(label, color="blue") {
+      return `<span class="badge ${color}">${label || "N/A"}</span>`;
     }
 
     function renderDashboard() {
@@ -727,6 +894,124 @@
       return `<div class="bar-chart"><div class="bar-y"><span>${prefix}${Math.round(max).toLocaleString()}</span><span>${prefix}${Math.round(max/2).toLocaleString()}</span><span>0</span></div>${values.map((v,i)=>`<div class="bar"><i style="height:${Math.max(4,(v/max)*160)}px;background:${colors[i]}"></i><small>${labels[i]}<br>${Number(v).toLocaleString()}</small></div>`).join("")}</div>`;
     }
 
+    function openVesselModal(id) {
+      const c = state.calls.find(x=>x.id===id);
+      state.selectedCall = c;
+      state.vesselTab = state.vesselTab || "nomination";
+      $("#modal").className = "modal wide";
+      $("#modal").innerHTML = renderVesselModal(c);
+      $("#modalLayer").classList.add("open");
+      document.body.classList.add("modal-open");
+    }
+
+    function renderVesselModal(c) {
+      const tabs = [
+        ["nomination", s("Nomination","Nomination")],
+        ["pda", "PDA"],
+        ["compare", "PDA vs FDA"],
+        ["vouchers", "Vouchers"],
+        ["fx", "FX Check"],
+        ["mail", "Mail & Docs"],
+        ["rating", s("Rate Agent","Rate Agent")]
+      ];
+      return `<div class="modal-head"><div><strong>${c.vessel}</strong><div class="muted">${c.voyage} · ${c.operation} · ${c.port}</div></div><button class="icon-btn" data-action="close">×</button></div>
+        <nav class="vessel-tabs">${tabs.map(tab=>`<button class="${state.vesselTab===tab[0]?"active":""}" data-action="vtab" data-tab="${tab[0]}">${tab[1]}</button>`).join("")}</nav>
+        <div class="modal-body">${renderVesselTab(c)}</div>`;
+    }
+
+    function renderVesselTab(c) {
+      return ({
+        nomination: renderNomination,
+        pda: renderPda,
+        compare: renderComparison,
+        vouchers: renderVouchers,
+        fx: renderFx,
+        mail: renderMailDocs,
+        rating: renderRating
+      })[state.vesselTab](c);
+    }
+
+    function renderNomination(c) {
+      const agent = agents.find(a=>a.name===c.agent) || agents[2];
+      return `<div class="grid-2">
+        <section class="card panel"><h3>${s("Selección de agente","Agent selection")}</h3><div class="grid-2"><div class="field"><label>${t("country")}</label><select><option>${c.country}</option></select></div><div class="field"><label>${t("port")}</label><select><option>${c.port}</option></select></div></div>
+          <div class="insight ${agent.score < 55 ? "red" : "green"}" style="margin-top:12px"><strong>${agent.name}</strong><p class="muted">${agent.note}</p>${scoreLine("AidA score", agent.score)}<span class="badge amber">${s("Fee index","Fee index")} ${agent.fee}</span></div>
+          <textarea style="margin-top:12px">Dear ${agent.name},\n\nPlease confirm your nomination for ${c.vessel} / ${c.voyage} at ${c.port}. Kindly send PDA with tariff support and expected voucher pack.</textarea>
+          <div class="chip-row" style="margin-top:12px"><button class="btn primary" data-action="sendNomination">${s("Enviar nominación","Send nomination")}</button><button class="btn ghost" data-action="toast" data-toast="${t("compare")}">${t("compare")}</button></div>
+        </section>
+        <section class="card panel"><h3>${s("Voyage & billing","Voyage & billing")}</h3><div class="grid-2">
+          ${[["Vessel",c.vessel],["Voyage",c.voyage],["Operation",c.operation],["Port",c.port],["ETA",c.eta],["ETD",c.etd],["Currency",c.currency],["Billing party","NPR Europa"]].map(f=>`<div class="field"><label>${f[0]}</label><input value="${f[1]}"></div>`).join("")}
+        </div></section>
+      </div>`;
+    }
+
+    function renderPda(c) {
+      if (!c.pdaLoaded) return `<section class="card panel"><h3>${s("PDA pendiente","PDA pending")}</h3><p class="muted">${s("Simula la llegada del PDA y AidA extraerá importes, cargos, moneda y desviaciones.", "Simulate PDA arrival and AidA will extract amounts, charges, currency and deviations.")}</p><div class="drop-zone" data-action="runPdaOcr"><strong>${t("dropText")}</strong><div class="progress hidden"><i></i></div><span class="muted mono" id="ocrLabel"></span></div></section>`;
+      return `<div class="grid-2">
+        <section class="card panel"><h3>PDA</h3>${fileBar("PDA_"+c.voyage+".pdf", c.pdaStatus, "runPdaOcr")}
+          <div class="mini-grid">${mini("Total PDA", money(c.pda,c.currency)), mini("OCR", "96%"), mini("Risk", c.risk+"/10")}</div>
+          <div class="insight ${c.risk>6?"red":"amber"}" style="margin-top:12px"><strong>${c.issues[0]}</strong><p class="muted">${s("AidA compara la proforma contra histórico de puerto, agente y red.", "AidA compares the proforma against port, agent and network history.")}</p></div>
+          <div class="chip-row" style="margin-top:12px"><button class="btn primary" data-action="approvePda">${s("Aprobar PDA","Approve PDA")}</button><button class="btn danger" data-action="queryAgent">${s("Consultar agente","Query agent")}</button></div>
+        </section>
+        <section class="card panel"><h3>${s("Benchmark de cargos","Charge benchmark")}</h3>${barChart([2560, 3200, 3500, 1900], [s("Avg red","Network avg"),"PDA","FDA","Port"], ["var(--teal)","var(--amber)","var(--red)","var(--blue)"], c.currency+" ")}
+          <div class="table-wrap"><table><thead><tr><th>Item</th><th>PDA</th><th>Avg</th><th>OCR</th></tr></thead><tbody>${charges.map(x=>`<tr><td>${x.item}</td><td>${money(x.pda,c.currency)}</td><td>${money(x.avg,c.currency)}</td><td>${x.conf}%</td></tr>`).join("")}</tbody></table></div></section>
+      </div>`;
+    }
+
+    function renderComparison(c) {
+      if (!c.fdaLoaded) return `<section class="card panel"><h3>${s("FDA pendiente","FDA pending")}</h3><p class="muted">${s("Sube o simula FDA para comparar contra PDA aprobado y fondos enviados.", "Upload or simulate FDA to compare against approved PDA and sent funds.")}</p><div class="drop-zone" data-action="runFdaOcr"><strong>${s("Simular carga FDA","Simulate FDA upload")}</strong><div class="progress hidden"><i></i></div><span class="muted mono" id="ocrLabel"></span></div></section>`;
+      return `<div class="grid-2"><section class="card panel"><h3>PDA vs FDA</h3><div class="mini-grid">${mini("PDA", money(c.pda,c.currency)), mini("FDA", money(c.fda,c.currency)), mini(s("Diferencia","Difference"), money((c.fda||0)-(c.pda||0),c.currency))}</div>
+        <div class="insight red" style="margin-top:12px"><strong>${s("Discrepancia detectada","Discrepancy detected")}</strong><p class="muted">${c.issues.join(". ")}</p></div>
+        <div class="chip-row" style="margin-top:12px"><button class="btn danger" data-action="queryAgent">${t("draftDispute")}</button><button class="btn ghost" data-action="payUndisputed">${s("Pagar monto no disputado","Pay undisputed amount")}</button><button class="btn primary" disabled>${t("approveClean")}</button></div></section>
+        <section class="card panel"><h3>${s("Líneas comparadas","Compared lines")}</h3><div class="table-wrap"><table><thead><tr><th>Item</th><th>PDA</th><th>FDA</th><th>${s("Estado","State")}</th></tr></thead><tbody>${charges.map(x=>`<tr><td>${x.item}</td><td>${money(x.pda,c.currency)}</td><td>${money(x.fda,c.currency)}</td><td>${x.fda>x.pda?statusPill(s("Revisar","Review"),"red"):statusPill("OK","green")}</td></tr>`).join("")}</tbody></table></div></section></div>`;
+    }
+
+    function renderVouchers(c) {
+      const names = ["Agency invoice","Pilotage receipt","Towage receipt","Port dues","Mooring voucher","Launch boat","Garbage receipt","Final SOF"];
+      const received = c.vouchers.filter(Boolean).length;
+      return `<div class="grid-2"><section class="card panel"><h3>${s("Checklist documental","Document checklist")}</h3><p class="muted">${received}/8 ${s("recibidos","received")}</p><div class="voucher-list">${names.map((name,i)=> {
+        const v = c.vouchers[i];
+        const color = v === true ? "green" : v === "mismatch" ? "amber" : "red";
+        const label = v === true ? "OK" : v === "mismatch" ? s("Monto no calza","Amount mismatch") : s("Falta","Missing");
+        return `<div class="voucher-row"><span><strong>${name}</strong><br><small class="muted">${label}</small></span>${statusPill(label,color)}</div>`;
+      }).join("")}</div></section>
+      <section class="card panel"><h3>${s("Acciones","Actions")}</h3><div class="insight red"><strong>${s("Paquete incompleto","Incomplete pack")}</strong><p class="muted">${s("AidA bloquea aprobación limpia hasta recibir voucher faltante o justificar excepción.", "AidA blocks clean approval until missing vouchers are received or an exception is justified.")}</p></div><textarea>Dear Agent,\n\nPlease provide the missing voucher pack for ${c.vessel} / ${c.voyage}, including corrected mooring support where applicable.</textarea><div class="chip-row" style="margin-top:12px"><button class="btn primary" data-action="requestVoucher">${t("requestVoucher")}</button><button class="btn ghost" data-action="toast" data-toast="${s("Excepción registrada","Exception registered")}">${s("Justificar excepción","Justify exception")}</button></div></section></div>`;
+    }
+
+    function renderFx(c) {
+      const risky = c.fx.includes("DZD");
+      return `<div class="grid-2"><section class="card panel"><h3>FX Check</h3><div class="insight ${risky?"red":"green"}"><strong>${risky?s("Alerta DZD","DZD alert"):s("Sin riesgo FX","No FX risk")}</strong><p class="muted">${risky?"Agent rate 128.40 DZD/USD vs official 134.75. Estimated overcharge USD 1,240.":s("La moneda y el tipo aplicado coinciden con los umbrales aceptados.", "Currency and applied rate match accepted thresholds.")}</p></div>
+        <div class="mini-grid" style="margin-top:12px">${mini(s("Tipo agente","Agent rate"), risky?"128.40":"1.00"), mini(s("Oficial","Official"), risky?"134.75":"1.00"), mini(s("Impacto","Impact"), risky?"$1,240":"$0")}</div><div class="chip-row" style="margin-top:12px"><button class="btn danger" data-action="queryAgent">${s("Generar query FX","Generate FX query")}</button></div></section>
+        <section class="card panel"><h3>${s("Tendencia 90 días","90-day trend")}</h3><svg class="fx-trend" viewBox="0 0 420 150" role="img" aria-label="FX trend"><polyline points="20,110 80,100 140,96 200,84 260,74 320,62 400,44" fill="none" stroke="var(--teal)" stroke-width="4"/><polyline points="20,116 80,116 140,108 200,104 260,98 320,92 400,88" fill="none" stroke="var(--red)" stroke-width="4"/><text x="22" y="28" fill="#60706c" font-size="12">Official vs agent rate</text></svg></section></div>`;
+    }
+
+    function renderMailDocs(c) {
+      const docs = ["Nomination.pdf","PDA.pdf","SOF.xlsx","Voucher pack.zip","FDA.pdf"];
+      return `<div class="grid-2"><section class="card panel"><h3>${s("Correo operativo","Operational mail")}</h3><div class="mail-list">${[
+        ["NPR","Nomination sent", "2h"],
+        [c.agent,"PDA received with tariff backup", "1h"],
+        ["AidA","Agency fee variance flagged", "12m"]
+      ].map(m=>`<div class="mail-row"><span class="badge blue">${m[0]}</span><span><strong>${m[1]}</strong><br><small class="muted">${c.vessel} · ${c.voyage}</small></span><small class="muted">${m[2]}</small></div>`).join("")}</div></section>
+      <section class="card panel"><h3>${s("Documentos","Documents")}</h3><div class="doc-list">${docs.map((d,i)=>`<div class="doc-row"><span><strong>${d}</strong><br><small class="muted">${i<3?s("Validado por OCR","OCR validated"):s("Pendiente de revisión","Pending review")}</small></span>${statusPill(i<3?"OK":s("Review","Review"),i<3?"green":"amber")}</div>`).join("")}</div><button class="btn primary" style="margin-top:12px" data-action="docUpload">${t("uploadDocs")}</button></section></div>`;
+    }
+
+    function renderRating(c) {
+      const labels = [s("Precisión documental","Document accuracy"),s("Rapidez de respuesta","Response speed"),s("Competitividad de coste","Cost competitiveness"),s("Calidad operativa","Operational quality"),s("Transparencia FX","FX transparency"),s("Resolución de disputas","Dispute resolution")];
+      const avg = Math.round((state.rating6.reduce((a,b)=>a+b,0) || 18) / 30 * 100);
+      return `<div class="grid-2"><section class="card panel"><h3>${t("rateAgent")}</h3><div class="rating-list">${labels.map((label,i)=>`<div class="rating-row"><span>${label}</span><span>${[1,2,3,4,5].map(n=>`<button class="star ${state.rating6[i]>=n?"on":""}" data-action="vesselStar" data-row="${i}" data-star="${n}">★</button>`).join("")}</span></div>`).join("")}</div>
+        <div class="grid-2" style="margin-top:12px">${[s("¿Enviar a red AidA?","Send to AidA network?"),s("¿Bloquear como preferido?","Block as preferred?"),s("¿Requiere revisión?","Needs review?"),s("¿Compartir benchmark?","Share benchmark?")].map((label,i)=>`<div class="voucher-row"><span>${label}</span><span class="yesno"><button class="${i===2?"active":""}">${t("yes")}</button><button class="${i!==2?"active":""}">${t("no")}</button></span></div>`).join("")}</div>
+        <textarea style="margin-top:12px">${agents.find(a=>a.name===c.agent)?.note || ""}</textarea><button class="btn primary" data-action="submitRating">${s("Guardar evaluación","Save rating")}</button></section>
+        <section class="card panel"><h3>${s("Score vivo","Live score")}</h3><div class="toolbar"><div class="score-circle"><strong>${avg}</strong></div><div><strong>${c.agent}</strong><p class="muted">${s("El score actualiza ranking, nominaciones futuras y alertas por país/puerto.", "The score updates ranking, future nominations and country/port alerts.")}</p></div></div>${scoreLine("Cost", Math.max(20, 100-c.risk*7))}${scoreLine("Service", avg)}${scoreLine("Compliance", c.fx.includes("risk")?42:88)}</section></div>`;
+    }
+
+    function mini(label, value) {
+      return `<div class="mini-card"><span>${label}</span><strong>${value}</strong></div>`;
+    }
+
+    function fileBar(name, status, action) {
+      return `<div class="file-bar"><span><strong>${name}</strong><br><small class="muted">${status}</small></span><button class="btn ghost" data-action="${action}">${s("Reprocesar OCR","Re-run OCR")}</button></div>`;
+    }
+
     function openCallDetail(id) {
       const c = state.calls.find(x=>x.id===id);
       state.selectedCall = c;
@@ -746,6 +1031,7 @@
 
     function openNewFile() {
       state.uploadStep = 0;
+      $("#modal").className = "modal";
       $("#modal").innerHTML = `<div class="modal-head"><div><strong>${t("newFile")}</strong><div class="muted">${t("step1")}</div></div><button class="icon-btn" data-action="close">×</button></div><div class="modal-body" id="newFileBody">${uploadBody()}</div>`;
       $("#modalLayer").classList.add("open");
       document.body.classList.add("modal-open");
@@ -769,6 +1055,7 @@
     function closeOverlays() {
       $("#drawerLayer").classList.remove("open");
       $("#modalLayer").classList.remove("open");
+      $("#modal").className = "modal";
       document.body.classList.remove("modal-open");
     }
 
@@ -787,31 +1074,74 @@
       tick();
     }
 
+    function runFileOcr(zone, kind) {
+      const steps = kind === "pda" ? [s("Leyendo PDA…","Reading PDA…"), s("Extrayendo cargos…","Extracting charges…"), s("Comparando benchmark…","Comparing benchmark…"), t("complete")] : [s("Leyendo FDA…","Reading FDA…"), s("Comparando contra PDA…","Comparing against PDA…"), s("Detectando diferencias…","Detecting differences…"), t("complete")];
+      const bar = $(".progress", zone), fill = $(".progress i", zone), label = $("#ocrLabel");
+      if (bar) bar.classList.remove("hidden");
+      let i = 0;
+      const tick = () => {
+        if (label) label.textContent = steps[i];
+        if (fill) fill.style.width = `${((i+1)/steps.length)*100}%`;
+        i++;
+        if (i < steps.length) setTimeout(tick, 500);
+        else setTimeout(()=>{
+          if (state.selectedCall) {
+            if (kind === "pda") {
+              state.selectedCall.pdaLoaded = true;
+              state.selectedCall.pda = state.selectedCall.pda || 15400;
+              state.selectedCall.pdaStatus = "PDA review";
+              state.selectedCall.status = "inReview";
+            } else {
+              state.selectedCall.fdaLoaded = true;
+              state.selectedCall.fda = state.selectedCall.fda || Math.round((state.selectedCall.pda || 15400) * 1.027);
+              state.selectedCall.fdaStatus = state.selectedCall.risk > 6 ? "FDA issue" : "FDA review";
+            }
+            $("#modal").innerHTML = renderVesselModal(state.selectedCall);
+          }
+          showToast(t("toastUpload"));
+        }, 300);
+      };
+      tick();
+    }
+
     document.addEventListener("click", (e) => {
       const target = e.target.closest("[data-action]");
       if (!target) return;
       const action = target.dataset.action;
       if (action === "lang") { state.lang = target.dataset.lang; render(); showToast(t("toastLang")); return; }
-      if (action === "launch") { state.screen = "app"; state.tab = "dashboard"; render(); showToast(t("toastLaunch")); return; }
+      if (action === "launch") { state.screen = "app"; state.tab = "fileboard"; render(); showToast(t("toastLaunch")); return; }
       if (action === "site" || action === "home") { state.screen = "site"; closeOverlays(); render(); return; }
       if (action === "tab") { state.tab = target.dataset.tab; render(); return; }
+      if (action === "fileFilter") { state.fileFilter = target.dataset.filter; render(); return; }
+      if (action === "vessel") { openVesselModal(target.dataset.id); return; }
+      if (action === "vtab") { state.vesselTab = target.dataset.tab; if (state.selectedCall) $("#modal").innerHTML = renderVesselModal(state.selectedCall); return; }
       if (action === "detail") { openCallDetail(target.dataset.id); return; }
       if (action === "close") { closeOverlays(); return; }
       if (action === "newFile") { openNewFile(); return; }
       if (action === "startOcr") { startOcr(target); return; }
+      if (action === "runPdaOcr") { runFileOcr(target.closest(".drop-zone") || target.closest(".file-bar") || target, "pda"); return; }
+      if (action === "runFdaOcr") { runFileOcr(target.closest(".drop-zone") || target, "fda"); return; }
       if (action === "createFiles") {
-        state.calls.push({ id:"PACIFIC_HORN_A", vessel:"PACIFIC HORN", voyage:"VY-2025-047", port:"Constanta", country:"Romania", agent:"Pending", pda:null, fda:null, variance:null, fx:"N/A", funds:0, risk:5, status:"awaitingPda", currency:"EUR", issues:["PDA not received"], recovered:0 });
-        state.calls.push({ id:"PACIFIC_HORN_B", vessel:"PACIFIC HORN", voyage:"VY-2025-047", port:"Algiers", country:"Algeria", agent:"Pending", pda:null, fda:null, variance:null, fx:"DZD risk", funds:0, risk:8, status:"awaitingPda", currency:"DZD", issues:["Local currency FX risk"], recovered:0 });
-        state.calls.push({ id:"PACIFIC_HORN_C", vessel:"PACIFIC HORN", voyage:"VY-2025-047", port:"Tunis", country:"Tunisia", agent:"Pending", pda:null, fda:null, variance:null, fx:"N/A", funds:0, risk:6, status:"awaitingPda", currency:"EUR", issues:["Agent nomination pending"], recovered:0 });
-        closeOverlays(); state.tab = "audit"; render(); showToast(t("toastCreated")); return;
+        state.calls.push({ id:"PACIFIC_HORN_A", vessel:"PACIFIC HORN", voyage:"VY-2025-047", operation:"Bulk wheat load", port:"Constanta", country:"Romania", agent:"Pending", eta:"2025-07-02", etd:"2025-07-04", pda:null, fda:null, variance:null, fx:"N/A", funds:0, risk:5, status:"awaitingPda", pdaStatus:"Awaiting PDA", fdaStatus:"Not started", currency:"EUR", pdaLoaded:false, fdaLoaded:false, vouchers:[false,false,false,false,false,false,false,false], issues:["PDA not received"], recovered:0 });
+        state.calls.push({ id:"PACIFIC_HORN_B", vessel:"PACIFIC HORN", voyage:"VY-2025-047", operation:"Bulk wheat discharge", port:"Algiers", country:"Algeria", agent:"Pending", eta:"2025-07-08", etd:"2025-07-11", pda:null, fda:null, variance:null, fx:"DZD risk", funds:0, risk:8, status:"awaitingPda", pdaStatus:"Awaiting PDA", fdaStatus:"Not started", currency:"DZD", pdaLoaded:false, fdaLoaded:false, vouchers:[false,false,false,false,false,false,false,false], issues:["Local currency FX risk"], recovered:0 });
+        state.calls.push({ id:"PACIFIC_HORN_C", vessel:"PACIFIC HORN", voyage:"VY-2025-047", operation:"Bulk wheat discharge", port:"Tunis", country:"Tunisia", agent:"Pending", eta:"2025-07-12", etd:"2025-07-14", pda:null, fda:null, variance:null, fx:"N/A", funds:0, risk:6, status:"awaitingPda", pdaStatus:"Awaiting PDA", fdaStatus:"Not started", currency:"EUR", pdaLoaded:false, fdaLoaded:false, vouchers:[false,false,false,false,false,false,false,false], issues:["Agent nomination pending"], recovered:0 });
+        closeOverlays(); state.tab = "fileboard"; render(); showToast(t("toastCreated")); return;
       }
       if (action === "approve") { if (state.selectedCall) state.selectedCall.status = "clean"; closeOverlays(); render(); showToast(t("toastApproved")); return; }
+      if (action === "approvePda") { if (state.selectedCall) { state.selectedCall.pdaStatus = "PDA approved"; $("#modal").innerHTML = renderVesselModal(state.selectedCall); } showToast(t("toastApproved")); return; }
+      if (action === "queryAgent") { showToast(t("toastDraft")); return; }
+      if (action === "payUndisputed") { showToast(s("Pago no disputado marcado para aprobación.", "Undisputed payment marked for approval.")); return; }
+      if (action === "sendNomination") { showToast(s("Nominación preparada para revisión humana.", "Nomination prepared for human review.")); return; }
+      if (action === "requestVoucher") { showToast(t("toastVoucher")); return; }
+      if (action === "docUpload") { showToast(t("toastUpload")); return; }
+      if (action === "submitRating") { showToast(s("Evaluación guardada. Score del agente actualizado.", "Rating saved. Agent score updated.")); return; }
       if (action === "draft") { showToast(t("toastDraft")); return; }
       if (action === "voucher") { showToast(t("toastVoucher")); return; }
       if (action === "toast") { showToast(target.dataset.toast || "OK"); return; }
       if (action === "agentProfile") { const a = agents.find(x=>x.name===target.dataset.agent); showToast(`${a.name}: ${a.note}`); return; }
       if (action === "simulateTariff") { showToast(`${t("simulatePda")}: ${money(12200)} · confidence 82%`); return; }
       if (action === "star") { state.rating[Number(target.dataset.row)] = Number(target.dataset.star); if (state.selectedCall) openCallDetail(state.selectedCall.id); return; }
+      if (action === "vesselStar") { state.rating6[Number(target.dataset.row)] = Number(target.dataset.star); if (state.selectedCall) $("#modal").innerHTML = renderVesselModal(state.selectedCall); return; }
     });
 
     document.addEventListener("change", (e) => {

@@ -706,7 +706,7 @@
     const money = (n, cur="EUR") => n == null ? "—" : `${cur} ${Number(n).toLocaleString("en-US")}`;
     const riskClass = (risk) => risk >= 8 ? "high" : risk >= 5 ? "mid" : "";
     const statusLabel = (s) => t(s);
-    const statusBadge = (s) => `<span class="badge ${s==="clean"?"green":s==="disputed"?"red":s==="awaitingPda"?"amber":"blue"}">${statusLabel(s)}</span>`;
+    const statusBadge = (s) => { const color = s==="clean"?"green":s==="disputed"?"red":s==="awaitingPda"?"amber":"blue"; const pulse = s==="disputed" ? " pulse" : ""; return `<span class="badge ${color}"><span class="dot ${color}${pulse}"></span>${statusLabel(s)}</span>`; };
     const scoreColor = (v) => v > 84 ? "var(--green)" : v > 68 ? "var(--teal)" : v > 52 ? "var(--amber)" : "var(--red)";
 
     function render() {
@@ -879,7 +879,7 @@
 
     function renderDisputes() {
       return `${moduleHead(t("disputesTitle"), t("disputesText"), `<button class="btn primary" data-action="draft">${t("autoDraft")}</button>`)}
-      <div class="grid-3">${disputeThreads.map(d=>`<section class="card panel"><span class="badge ${d.status==="Recovered"?"green":d.status==="Sent"?"blue":"amber"}">${d.status}</span><h3>${d.id}</h3><p class="muted">${d.call}<br>${d.type}</p><strong>${t("recovered")}: €${d.impact.toLocaleString()}</strong><div class="chip-row" style="margin-top:12px"><button class="btn ghost" data-action="draft">${t("autoDraft")}</button><button class="btn" data-action="toast" data-toast="${t("trace")}">${t("trace")}</button></div></section>`).join("")}</div>
+      <div class="grid-3">${disputeThreads.map(d=>`<section class="card panel"><span class="badge ${d.status==="Recovered"?"green":d.status==="Sent"?"blue":"amber"}"><span class="dot ${d.status==="Recovered"?"green":d.status==="Sent"?"blue":"amber"}"></span>${d.status}</span><h3>${d.id}</h3><p class="muted">${d.call}<br>${d.type}</p><strong>${t("recovered")}: €${d.impact.toLocaleString()}</strong><div class="chip-row" style="margin-top:12px"><button class="btn ghost" data-action="draft">${t("autoDraft")}</button><button class="btn" data-action="toast" data-toast="${t("trace")}">${t("trace")}</button></div></section>`).join("")}</div>
       <section class="card panel" style="margin-top:14px"><h3>${t("autoDraft")}</h3><textarea>Dear Agent,\n\nAidA has identified discrepancies linked to voyage VY-2025-041. Please provide supporting invoices or issue a revised FDA / credit note.\n\nBest regards,\nNPR Europa Disbursements Desk</textarea><button class="btn primary" data-action="draft">${t("sendDraft")}</button></section>`;
     }
 

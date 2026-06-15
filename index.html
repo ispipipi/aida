@@ -496,6 +496,32 @@
       border-radius: var(--radius);
       background: linear-gradient(180deg, #fff, var(--paper-2));
     }
+    .alert-banner { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: var(--radius); border: 1px solid; margin-bottom: 14px; }
+    .alert-bad { background: rgba(223,63,69,.06); border-color: rgba(223,63,69,.3); }
+    .alert-warn { background: rgba(228,155,24,.07); border-color: rgba(228,155,24,.3); }
+    .alert-ok { background: rgba(16,166,109,.07); border-color: rgba(16,166,109,.25); }
+    .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+    .alert-title { font: 700 11px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
+    .at-bad { color: var(--red); }
+    .at-warn { color: var(--amber); }
+    .at-ok { color: var(--green); }
+    .alert-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .mini-bench { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+    .mini-bench-title { font: 700 9px/1 var(--mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+    .mini-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .mini-bar-lbl { font: 700 9px/1 var(--mono); color: var(--muted); width: 130px; flex-shrink: 0; }
+    .mini-bar-track { flex: 1; height: 18px; background: var(--line); border-radius: 3px; overflow: hidden; }
+    .mini-bar-fill { height: 100%; display: flex; align-items: center; padding-left: 8px; font: 700 9px/1 var(--mono); border-radius: 3px; }
+    .mbf-ref { background: rgba(0,191,168,.2); color: var(--teal-dark); }
+    .mbf-cur { background: rgba(228,155,24,.25); color: var(--amber); }
+    .mbf-best { background: rgba(16,166,109,.18); color: var(--green); }
+    .ocr-result-bar { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: rgba(0,191,168,.07); border: 1px solid rgba(0,191,168,.2); border-radius: var(--radius); margin-bottom: 14px; font: 700 10px/1 var(--mono); color: var(--teal-dark); letter-spacing: .04em; }
+    .ocr-result-bar::before { content:''; width: 7px; height: 7px; background: var(--teal); border-radius: 99px; animation: pulse 1.5s infinite; flex-shrink: 0; }
+    .query-box { background: rgba(228,155,24,.06); border: 1px solid rgba(228,155,24,.25); border-radius: var(--radius); padding: 16px; margin-top: 14px; }
+    .query-label { font: 700 9px/1 var(--mono); letter-spacing: .1em; color: var(--amber); text-transform: uppercase; margin-bottom: 10px; }
+    .diff-ok { color: var(--green); font: 700 12px/1 var(--mono); }
+    .diff-warn { color: var(--amber); font: 700 12px/1 var(--mono); }
+    .diff-bad { color: var(--red); font: 700 12px/1 var(--mono); }
     .drop-zone {
       min-height: 170px;
       display: grid;
@@ -1018,24 +1044,105 @@
     }
 
     function renderPda(c) {
-      if (!c.pdaLoaded) return `<section class="card panel"><h3>${s("PDA pendiente","PDA pending")}</h3><p class="muted">${s("Simula la llegada del PDA y AidA extraerá importes, cargos, moneda y desviaciones.", "Simulate PDA arrival and AidA will extract amounts, charges, currency and deviations.")}</p><div class="drop-zone" data-action="runPdaOcr"><strong>${t("dropText")}</strong><div class="progress hidden"><i></i></div><span class="muted mono" id="ocrLabel"></span></div></section>`;
-      return `<div class="grid-2">
-        <section class="card panel"><h3>PDA</h3>${fileBar("PDA_"+c.voyage+".pdf", c.pdaStatus, "runPdaOcr")}
-          <div class="mini-grid">${mini("Total PDA", money(c.pda,c.currency)), mini("OCR", "96%"), mini("Risk", c.risk+"/10")}</div>
-          <div class="insight ${c.risk>6?"red":"amber"}" style="margin-top:12px"><strong>${c.issues[0]}</strong><p class="muted">${s("AidA compara la proforma contra histórico de puerto, agente y red.", "AidA compares the proforma against port, agent and network history.")}</p></div>
-          <div class="chip-row" style="margin-top:12px"><button class="btn primary" data-action="approvePda">${s("Aprobar PDA","Approve PDA")}</button><button class="btn danger" data-action="queryAgent">${s("Consultar agente","Query agent")}</button></div>
-        </section>
-        <section class="card panel"><h3>${s("Benchmark de cargos","Charge benchmark")}</h3>${barChart([2560, 3200, 3500, 1900], [s("Avg red","Network avg"),"PDA","FDA","Port"], ["var(--teal)","var(--amber)","var(--red)","var(--blue)"], c.currency+" ")}
-          <div class="table-wrap"><table><thead><tr><th>Item</th><th>PDA</th><th>Avg</th><th>OCR</th></tr></thead><tbody>${charges.map(x=>`<tr><td>${x.item}</td><td>${money(x.pda,c.currency)}</td><td>${money(x.avg,c.currency)}</td><td>${x.conf}%</td></tr>`).join("")}</tbody></table></div></section>
+      if (!c.pdaLoaded) return `<section class="card panel">
+        <h3>Upload Proforma DA — OCR Reader</h3>
+        <p class="muted" style="margin-bottom:14px">Drop the PDA here. AidA OCR extracts all line items and compares agency fees against port benchmarks instantly.</p>
+        <div class="drop-zone" data-action="runPdaOcr" style="cursor:pointer">
+          <div style="font-size:28px;margin-bottom:10px">🔍</div>
+          <strong>DROP PDA HERE OR CLICK TO UPLOAD</strong>
+          <p class="muted" style="margin-top:6px">PDF or Excel · AidA OCR extracts all line items and compares agency fee against port benchmarks</p>
+          <div class="progress hidden" style="margin-top:12px"><i></i></div>
+          <span class="muted mono" id="ocrLabel" style="display:block;margin-top:8px;font-size:11px"></span>
+        </div>
+      </section>`;
+      const agentFee = charges.find(x=>x.item==="Agency Fees");
+      const feeOver = agentFee && agentFee.pda > agentFee.avg;
+      return `<div>
+        <div class="ocr-result-bar">OCR COMPLETE — Proforma DA · ${c.vessel} · ${c.port} · ${money(c.pda,c.currency)} · ${feeOver?"1 flag raised":"Clean"}</div>
+        ${feeOver ? `<div class="alert-banner alert-warn">
+          <div class="alert-icon">⚠️</div>
+          <div><div class="alert-title at-warn">Agency Fee Alert — ${Math.round((agentFee.pda/agentFee.avg-1)*100)}% Above Network Benchmark</div>
+          <div class="alert-text">PDA agency fee <strong>${money(agentFee.pda,c.currency)}</strong> is significantly above the AidA network average for ${c.port} (<strong>${money(agentFee.avg,c.currency)}</strong>, 47 port calls). Query recommended before approving.</div></div>
+        </div>
+        <div class="mini-bench">
+          <div class="mini-bench-title">Agency Fee Benchmark — ${c.port} · 47 AidA-network port calls</div>
+          <div class="mini-bar-row"><div class="mini-bar-lbl">Network avg</div><div class="mini-bar-track"><div class="mini-bar-fill mbf-ref" style="width:58%">${money(agentFee.avg,c.currency)}</div></div></div>
+          <div class="mini-bar-row"><div class="mini-bar-lbl" style="color:var(--amber)">This PDA</div><div class="mini-bar-track"><div class="mini-bar-fill mbf-cur" style="width:73%">${money(agentFee.pda,c.currency)} ↑${Math.round((agentFee.pda/agentFee.avg-1)*100)}%</div></div></div>
+        </div>` : `<div class="alert-banner alert-ok"><div class="alert-icon">✅</div><div><div class="alert-title at-ok">PDA Within Expected Range</div><div class="alert-text">All charges verified against AidA network benchmarks for ${c.port}. No anomalies detected.</div></div></div>`}
+        <div style="margin-bottom:14px">${fileBar("PDA_"+c.voyage+".pdf", c.pdaStatus, "runPdaOcr")}</div>
+        <div class="table-wrap" style="margin-bottom:14px"><table><thead><tr><th>Item</th><th>Amount (${c.currency})</th><th>vs Benchmark</th><th>AidA Flag</th></tr></thead><tbody>
+          ${charges.map(x=>`<tr style="${x.pda>x.avg?"background:rgba(228,155,24,.04)":""}"><td style="${x.pda>x.avg?"color:var(--amber)":""}">${x.item}</td><td class="mono" style="${x.pda>x.avg?"color:var(--amber)":""}">${money(x.pda,c.currency)}</td><td class="${x.pda>x.avg?"diff-bad":"diff-ok"}">${x.pda>x.avg?`+${Math.round((x.pda/x.avg-1)*100)}% above avg`:"Within range"}</td><td>${statusPill(x.pda>x.avg?"Review":"OK",x.pda>x.avg?"amber":"green")}</td></tr>`).join("")}
+          <tr style="border-top:2px solid var(--line)"><td><strong>TOTAL</strong></td><td class="mono"><strong>${money(c.pda,c.currency)}</strong></td><td class="${charges.some(x=>x.pda>x.avg)?"diff-warn":"diff-ok"}">${charges.filter(x=>x.pda>x.avg).length} item(s) flagged</td><td>—</td></tr>
+        </tbody></table></div>
+        <div class="chip-row" style="margin-bottom:14px">
+          <button class="btn primary" data-action="approvePda">✓ Approve PDA</button>
+          <button class="btn danger" data-action="queryAgent">Query Agent on Fees</button>
+        </div>
+        ${feeOver ? `<div class="query-box">
+          <div class="query-label">✉ Query Agent — Agency Fee</div>
+          <textarea style="width:100%;min-height:100px;border:1px solid var(--line);border-radius:var(--radius);padding:10px;font:12px/1.5 var(--mono);color:var(--ink);background:var(--paper)">Dear ${c.agent},
+
+Re: ${c.vessel} - ${c.port} - ${c.voyage} - Proforma DA
+
+We have reviewed the PDA and note that the agency fee of ${money(agentFee.pda,c.currency)} is significantly above the market average for ${c.port} (${money(agentFee.avg,c.currency)} network average, 47 port calls).
+
+Could you please provide justification or revert with a revised figure?
+
+Best regards, NPR Europa</textarea>
+          <div class="chip-row" style="margin-top:10px"><button class="btn primary" data-action="queryAgent">Send Query →</button><button class="btn ghost" data-action="toast" data-toast="Draft saved">Save Draft</button></div>
+        </div>` : ""}
       </div>`;
     }
 
     function renderComparison(c) {
-      if (!c.fdaLoaded) return `<section class="card panel"><h3>${s("FDA pendiente","FDA pending")}</h3><p class="muted">${s("Sube o simula FDA para comparar contra PDA aprobado y fondos enviados.", "Upload or simulate FDA to compare against approved PDA and sent funds.")}</p><div class="drop-zone" data-action="runFdaOcr"><strong>${s("Simular carga FDA","Simulate FDA upload")}</strong><div class="progress hidden"><i></i></div><span class="muted mono" id="ocrLabel"></span></div></section>`;
-      return `<div class="grid-2"><section class="card panel"><h3>PDA vs FDA</h3><div class="mini-grid">${mini("PDA", money(c.pda,c.currency)), mini("FDA", money(c.fda,c.currency)), mini(s("Diferencia","Difference"), money((c.fda||0)-(c.pda||0),c.currency))}</div>
-        <div class="insight red" style="margin-top:12px"><strong>${s("Discrepancia detectada","Discrepancy detected")}</strong><p class="muted">${c.issues.join(". ")}</p></div>
-        <div class="chip-row" style="margin-top:12px"><button class="btn danger" data-action="queryAgent">${t("draftDispute")}</button><button class="btn ghost" data-action="payUndisputed">${s("Pagar monto no disputado","Pay undisputed amount")}</button><button class="btn primary" disabled>${t("approveClean")}</button></div></section>
-        <section class="card panel"><h3>${s("Líneas comparadas","Compared lines")}</h3><div class="table-wrap"><table><thead><tr><th>Item</th><th>PDA</th><th>FDA</th><th>${s("Estado","State")}</th></tr></thead><tbody>${charges.map(x=>`<tr><td>${x.item}</td><td>${money(x.pda,c.currency)}</td><td>${money(x.fda,c.currency)}</td><td>${x.fda>x.pda?statusPill(s("Revisar","Review"),"red"):statusPill("OK","green")}</td></tr>`).join("")}</tbody></table></div></section></div>`;
+      if (!c.fdaLoaded) return `<section class="card panel">
+        <h3>Upload Final DA — OCR Reader</h3>
+        <p class="muted" style="margin-bottom:14px">Drop the FDA here. AidA OCR extracts all lines and auto-compares against approved PDA — discrepancies highlighted instantly.</p>
+        <div class="drop-zone" data-action="runFdaOcr" style="cursor:pointer">
+          <div style="font-size:28px;margin-bottom:10px">🔍</div>
+          <strong>DROP FINAL DA HERE OR CLICK TO UPLOAD</strong>
+          <p class="muted" style="margin-top:6px">PDF or Excel · AidA OCR extracts all lines and auto-compares against approved PDA</p>
+          <div class="progress hidden" style="margin-top:12px"><i></i></div>
+          <span class="muted mono" id="ocrLabel" style="display:block;margin-top:8px;font-size:11px"></span>
+        </div>
+      </section>`;
+      const variance = (c.fda||0) - (c.pda||0);
+      const disputed = charges.filter(x=>x.fda>x.pda).length;
+      return `<div>
+        <div class="ocr-result-bar">OCR COMPLETE — Final DA · ${c.vessel} · ${c.port} · ${money(c.fda,c.currency)} · ${disputed} discrepanc${disputed===1?"y":"ies"} vs PDA</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px">
+          ${[["PDA Total",money(c.pda,c.currency),"var(--ink)"],["FDA Total",money(c.fda,c.currency),variance>0?"var(--amber)":"var(--green)"],["Unexplained Variance",money(variance,c.currency),variance>0?"var(--red)":"var(--green)"],["Items Disputed",disputed+" of "+charges.length,disputed>0?"var(--red)":"var(--green)"]].map(([label,val,col])=>`<div style="background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px"><div style="font:700 9px/1 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">${label}</div><div style="font:700 14px/1 var(--mono);color:${col}">${val}</div></div>`).join("")}
+        </div>
+        ${variance > 0 ? `<div class="alert-banner alert-bad">
+          <div class="alert-icon">🔴</div>
+          <div><div class="alert-title at-bad">${disputed} Discrepanc${disputed===1?"y":"ies"} vs Approved PDA — Total Variance ${money(variance,c.currency)}</div>
+          <div class="alert-text">${c.issues.slice(0,2).join(". ")}.</div></div>
+        </div>` : `<div class="alert-banner alert-ok"><div class="alert-icon">✅</div><div><div class="alert-title at-ok">FDA Matches PDA — No Discrepancies</div><div class="alert-text">All line items verified. Safe to approve and process payment.</div></div></div>`}
+        <div class="table-wrap" style="margin-bottom:14px"><table><thead><tr><th>Item</th><th>PDA (${c.currency})</th><th>FDA (${c.currency})</th><th>Δ</th><th>Status</th></tr></thead><tbody>
+          ${charges.map(x=>`<tr style="${x.fda>x.pda?"background:rgba(223,63,69,.04)":""}"><td style="${x.fda>x.pda?"color:var(--red)":""}">${x.item}</td><td class="mono" style="color:var(--muted)">${money(x.pda,c.currency)}</td><td class="mono" style="${x.fda>x.pda?"color:var(--red)":""}">${money(x.fda,c.currency)}</td><td class="${x.fda>x.pda?"diff-bad":"diff-ok"}">${x.fda>x.pda?"+"+money(x.fda-x.pda,c.currency):"—"}</td><td>${statusPill(x.fda>x.pda?"Disputed":"Match",x.fda>x.pda?"red":"green")}</td></tr>`).join("")}
+          <tr style="border-top:2px solid var(--line)"><td><strong>TOTAL</strong></td><td class="mono" style="color:var(--muted);font-weight:700">${money(c.pda,c.currency)}</td><td class="mono" style="font-weight:700">${money(c.fda,c.currency)}</td><td class="${variance>0?"diff-bad":"diff-ok"}" style="font-weight:700">${variance>0?"+"+money(variance,c.currency):"—"}</td><td>—</td></tr>
+        </tbody></table></div>
+        ${variance > 0 ? `<div class="query-box">
+          <div class="query-label">✉ Send Query to Agent</div>
+          <textarea style="width:100%;min-height:110px;border:1px solid var(--line);border-radius:var(--radius);padding:10px;font:12px/1.5 var(--mono);color:var(--ink);background:var(--paper)">Dear ${c.agent},
+
+Re: ${c.vessel} - ${c.port} - ${c.voyage} - Final DA
+
+We have reviewed the FDA and note ${disputed} discrepanc${disputed===1?"y":"ies"} vs the approved PDA totalling ${money(variance,c.currency)}:
+
+${charges.filter(x=>x.fda>x.pda).map(x=>`- ${x.item}: PDA ${money(x.pda,c.currency)} → FDA ${money(x.fda,c.currency)} (+${money(x.fda-x.pda,c.currency)}). Please provide supporting voucher.`).join("
+")}
+
+Please revert with documentation. Payment will be processed upon resolution.
+
+Best regards, NPR Europa</textarea>
+          <div class="chip-row" style="margin-top:10px">
+            <button class="btn danger" data-action="queryAgent">Send Query →</button>
+            <button class="btn ghost" data-action="payUndisputed">Pay Undisputed (${money(c.pda,c.currency)})</button>
+            <button class="btn primary" disabled style="opacity:.4">Approve FDA (blocked — ${disputed} dispute${disputed===1?"":"s"} open)</button>
+          </div>
+        </div>` : `<div class="chip-row"><button class="btn primary" data-action="approve">✓ Approve & Process Payment</button></div>`}
+      </div>`;
     }
 
     function renderVouchers(c) {

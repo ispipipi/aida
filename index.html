@@ -237,59 +237,94 @@
 
     .app {
       min-height: 100vh;
-      display: grid;
-      grid-template-columns: 200px 1fr;
+      display: flex;
+      flex-direction: column;
       background: var(--bg);
     }
-    .sidebar {
+    .app-nav {
       position: sticky;
       top: 0;
-      height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 18px;
-      padding: 18px;
-      border-right: 1px solid var(--line);
-      background: rgba(255,255,255,.82);
-      backdrop-filter: blur(12px);
-    }
-    .side-nav { display: grid; gap: 6px; }
-    .side-nav button {
-      min-height: 42px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 12px;
-      border-radius: var(--radius);
-      color: var(--muted);
-      font-weight: 800;
-      text-align: left;
-    }
-    .side-nav button.active { background: var(--ink); color: white; }
-    .app-main { min-width: 0; }
-    .app-top {
-      position: sticky;
-      top: 0;
-      z-index: 35;
-      min-height: 72px;
+      z-index: 50;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      padding: 14px 20px;
+      gap: 0;
+      height: 58px;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--line);
-      background: rgba(247,250,249,.9);
-      backdrop-filter: blur(12px);
+      box-shadow: 0 1px 4px rgba(16,32,29,.06);
     }
-    .mobile-tabs {
-      display: none;
+    .app-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+      border-right: 1px solid var(--line);
+      height: 100%;
+    }
+    .app-nav-tabs {
+      display: flex;
+      align-items: stretch;
+      height: 100%;
+      flex: 1;
       overflow-x: auto;
+    }
+    .app-nav-tab {
+      display: flex;
+      align-items: center;
       gap: 8px;
-      padding: 10px 14px;
+      padding: 0 20px;
+      height: 100%;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 13px;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    .app-nav-tab:hover { color: var(--ink); }
+    .app-nav-tab.active { color: var(--ink); border-bottom-color: var(--teal); }
+    .app-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      height: 100%;
+      border-left: 1px solid var(--line);
+    }
+    .app-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
       border-bottom: 1px solid var(--line);
       background: var(--paper);
     }
-    .mobile-tabs button { flex: 0 0 auto; }
+    .app-stats-bar-item {
+      padding: 12px 20px;
+      border-right: 1px solid var(--line);
+      text-align: center;
+    }
+    .app-stats-bar-item:last-child { border-right: none; }
+    .app-stats-bar-num {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      color: var(--teal-dark);
+    }
+    .app-stats-bar-label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-top: 2px;
+    }
+    .app-main { min-width: 0; flex: 1; }
+    .mobile-tabs { display: none; }
     .content { padding: 20px; }
     .module-head {
       display: flex;
@@ -549,12 +584,11 @@
         grid-column: 1 / -1;
       }
       .site-nav .container { gap: 10px; }
-      .app { grid-template-columns: 1fr; }
-      .sidebar { display: none; }
-      .mobile-tabs { display: flex; }
+      .app-nav-tabs { overflow-x: auto; }
+      .app-nav-actions strong { display: none; }
       .content { padding: 14px; }
       .module-head, .toolbar, .site-nav .container { flex-direction: column; align-items: flex-start; }
-      .app-top { align-items: flex-start; flex-direction: column; }
+      .app-stats-bar { grid-template-columns: 1fr 1fr; }
       .hero { padding: 42px 0; }
       .hero h1 {
         max-width: 100%;
@@ -755,15 +789,34 @@
 
     function renderApp() {
       const tabs = [["fileboard","▦",s("File Board","File Board")],["dashboard","◌",t("dashboard")],["analytics","◇",t("analytics")],["agents","◎",t("agents")],["tariffs","▤",t("tariffs")],["disputes","✉",t("disputes")]];
+      const active = state.calls.filter(c => c.status !== "clean").length;
+      const awaiting = state.calls.filter(c => c.status === "awaitingPda").length;
+      const fdaIssues = state.calls.filter(c => c.fdaLoaded && c.risk >= 6).length;
+      const recovered = state.calls.reduce((s,c)=>s+c.recovered,0);
+      const closed = state.calls.filter(c => c.status === "clean").length + 11;
       return `<section class="app">
-        <aside class="sidebar">${brandButton("site")}<nav class="side-nav">${tabs.map(tabButton).join("")}</nav><div class="chip-row">${langToggle()}<button class="btn" data-action="site">${t("backWeb")}</button></div></aside>
+        <nav class="app-nav">
+          <button class="app-nav-brand" data-action="site">${brandButton("site")}</button>
+          <div class="app-nav-tabs">${tabs.map(t2 => `<button class="app-nav-tab ${state.tab===t2[0]?"active":""}" data-action="tab" data-tab="${t2[0]}">${t2[1]} ${t2[2]}</button>`).join("")}</div>
+          <div class="app-nav-actions">
+            ${langToggle()}
+            <span class="badge red"><span class="dot red pulse"></span>3</span>
+            <strong style="font-size:13px">NPR Europa</strong>
+            <button class="btn ghost" data-action="newFile">${t("bulkUpload")}</button>
+            <button class="btn primary" data-action="newFile">+ ${t("newFile")}</button>
+          </div>
+        </nav>
+        <div class="app-stats-bar">
+          <div class="app-stats-bar-item"><div class="app-stats-bar-num">${active}</div><div class="app-stats-bar-label">${s("Viajes activos","Active voyages")}</div></div>
+          <div class="app-stats-bar-item"><div class="app-stats-bar-num" style="color:var(--amber)">${awaiting}</div><div class="app-stats-bar-label">${s("Esperando PDA","Awaiting PDA")}</div></div>
+          <div class="app-stats-bar-item"><div class="app-stats-bar-num" style="color:var(--red)">${fdaIssues}</div><div class="app-stats-bar-label">${s("FDA con issues","FDA issues")}</div></div>
+          <div class="app-stats-bar-item"><div class="app-stats-bar-num" style="color:var(--green)">$${((recovered+4100)/1000).toFixed(1)}K</div><div class="app-stats-bar-label">${s("Ahorro este mes","Saved this month")}</div></div>
+          <div class="app-stats-bar-item"><div class="app-stats-bar-num">${closed}</div><div class="app-stats-bar-label">${s("Cerrados este mes","Closed this month")}</div></div>
+        </div>
         <main class="app-main">
-          <header class="app-top"><div class="field search"><input id="globalSearch" placeholder="${t("globalSearch")}"></div><div class="chip-row"><span class="badge red"><span class="dot red pulse"></span>3</span><strong>NPR Europa</strong><button class="btn ghost" data-action="newFile">${t("bulkUpload")}</button><button class="btn primary" data-action="newFile">+ ${t("newFile")}</button></div></header>
-          <nav class="mobile-tabs">${tabs.map(tabButton).join("")}</nav>
           <div class="content fade">${renderTab()}</div>
         </main>
       </section>`;
-      function tabButton(x) { return `<button class="${state.tab===x[0]?"active":""}" data-action="tab" data-tab="${x[0]}"><span>${x[1]}</span>${x[2]}</button>`; }
     }
 
     function moduleHead(title, text, actions="") {

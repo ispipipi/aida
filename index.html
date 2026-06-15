@@ -572,7 +572,20 @@
     .score-track { height: 8px; border-radius: 99px; overflow: hidden; background: var(--line); }
     .score-fill { height: 100%; border-radius: 99px; background: var(--teal); transition: width .2s ease; }
     .score-line { display: grid; grid-template-columns: 1fr 44px; gap: 10px; align-items: center; margin: 10px 0; }
-    .star { color: var(--line-2); font-size: 22px; padding: 1px; }
+    .star { color: var(--line-2); font-size: 22px; padding: 1px; cursor: pointer; transition: color .1s, transform .1s; }
+    .star:hover { transform: scale(1.15); }
+    .yesno-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 8px; }
+    .yesno-label { font-size: 13px; color: var(--ink); }
+    .yesno-btns { display: flex; gap: 6px; }
+    .yesno-btn { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); color: var(--muted); padding: 5px 12px; font: 700 10px/1 var(--mono); letter-spacing: .04em; cursor: pointer; transition: all .15s; }
+    .yesno-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
+    .yesno-active-yes { background: rgba(16,166,109,.1) !important; border-color: rgba(16,166,109,.35) !important; color: var(--green) !important; font-weight: 700; }
+    .yesno-active-no { background: rgba(223,63,69,.08) !important; border-color: rgba(223,63,69,.35) !important; color: var(--red) !important; font-weight: 700; }
+    .rating-q { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .rating-q:last-of-type { border-bottom: none; }
+    .rating-q-label { font: 700 13px/1.2 inherit; color: var(--ink); margin-bottom: 3px; }
+    .rating-q-sub { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+    .rating-labels { display: flex; justify-content: space-between; font: 700 9px/1 var(--mono); color: var(--muted); margin-top: 4px; letter-spacing: .04em; }
     .star.on { color: var(--teal); }
     .drawer-backdrop, .modal-backdrop {
       position: fixed;
@@ -1389,12 +1402,81 @@ Best regards, NPR Europa</textarea>
     }
 
     function renderRating(c) {
-      const labels = [s("Precisión documental","Document accuracy"),s("Rapidez de respuesta","Response speed"),s("Competitividad de coste","Cost competitiveness"),s("Calidad operativa","Operational quality"),s("Transparencia FX","FX transparency"),s("Resolución de disputas","Dispute resolution")];
-      const avg = Math.round((state.rating6.reduce((a,b)=>a+b,0) || 18) / 30 * 100);
-      return `<div class="grid-2"><section class="card panel"><h3>${t("rateAgent")}</h3><div class="rating-list">${labels.map((label,i)=>`<div class="rating-row"><span>${label}</span><span>${[1,2,3,4,5].map(n=>`<button class="star ${state.rating6[i]>=n?"on":""}" data-action="vesselStar" data-row="${i}" data-star="${n}">★</button>`).join("")}</span></div>`).join("")}</div>
-        <div class="grid-2" style="margin-top:12px">${[s("¿Enviar a red AidA?","Send to AidA network?"),s("¿Bloquear como preferido?","Block as preferred?"),s("¿Requiere revisión?","Needs review?"),s("¿Compartir benchmark?","Share benchmark?")].map((label,i)=>`<div class="voucher-row"><span>${label}</span><span class="yesno"><button class="${i===2?"active":""}">${t("yes")}</button><button class="${i!==2?"active":""}">${t("no")}</button></span></div>`).join("")}</div>
-        <textarea style="margin-top:12px">${agents.find(a=>a.name===c.agent)?.note || ""}</textarea><button class="btn primary" data-action="submitRating">${s("Guardar evaluación","Save rating")}</button></section>
-        <section class="card panel"><h3>${s("Score vivo","Live score")}</h3><div class="toolbar"><div class="score-circle"><strong>${avg}</strong></div><div><strong>${c.agent}</strong><p class="muted">${s("El score actualiza ranking, nominaciones futuras y alertas por país/puerto.", "The score updates ranking, future nominations and country/port alerts.")}</p></div></div>${scoreLine("Cost", Math.max(20, 100-c.risk*7))}${scoreLine("Service", avg)}${scoreLine("Compliance", c.fx.includes("risk")?42:88)}</section></div>`;
+      const questions = [
+        ["1. Response time to nomination", "How quickly did the agent acknowledge and respond after nomination?", "Very slow (>48h)", "Excellent (<4h)"],
+        ["2. PDA accuracy & completeness", "Was the PDA accurate, complete and received on time before ETA?", "Inaccurate / late", "Perfect"],
+        ["3. FDA accuracy & voucher completeness", "Did the FDA match the PDA? Were all vouchers attached and correct?", "Many issues / missing", "All correct"],
+        ["4. Fee competitiveness", "Was the agency fee fair relative to services provided and market rates?", "Overpriced", "Excellent value"],
+        ["5. Operational service quality", "Husbandry, crew assistance, port coordination, problem-solving during the call?", "Poor", "Outstanding"],
+        ["6. Communication & transparency", "Did the agent proactively keep you informed of developments and issues?", "No updates", "Proactive & clear"]
+      ];
+      const yesnoQs = ["Would you use this agent again at this port?","Did the agent respond to queries within 24h?","Were any unexpected charges added in the FDA?","Were all port services carried out as quoted?"];
+      const ratingSum = state.rating6.reduce((a,b)=>a+b,0);
+      const ratingAvg = ratingSum > 0 ? ratingSum / Math.max(1, state.rating6.filter(v=>v>0).length) : 0;
+      const grade = ratingAvg===0?"?":ratingAvg>=4.5?"A+":ratingAvg>=4?"A":ratingAvg>=3.5?"B+":ratingAvg>=3?"B":ratingAvg>=2.5?"C+":ratingAvg>=2?"C":"D";
+      const gradeColor = ratingAvg===0?"var(--muted)":ratingAvg>=4?"var(--green)":ratingAvg>=3?"var(--teal-dark)":ratingAvg>=2?"var(--amber)":"var(--red)";
+      const agentData = agents.find(a=>a.name===c.agent);
+      const prevRatings = [
+        {vessel:"MV ARCTIC HERON",voy:"VY-2025-028",date:"Mar 2025",op:"1st Discharge",stars:3,comment:"Agency fee was high. FDA had one unexplained surcharge resolved after query. Overall acceptable."},
+        {vessel:"MV CERES",voy:"VY-2024-091",date:"Nov 2024",op:"Loading",stars:4,comment:"Good coordination. FDA matched PDA. Response within 12h. Fee slightly above avg but justified."},
+        {vessel:"MV THALEA",voy:"VY-2024-067",date:"Aug 2024",op:"1st Discharge",stars:2,comment:"FDA received 4 days after departure. Two vouchers missing. Agency fee 30% above benchmark."}
+      ];
+      return `<div class="grid-2">
+        <section class="card panel">
+          <h3 style="margin-bottom:4px">Rate This Port Call</h3>
+          <div style="font:700 9px/1 var(--mono);color:var(--muted);letter-spacing:.04em;margin-bottom:18px">${c.agent} &middot; ${c.port} &middot; ${c.voyage}</div>
+          ${questions.map(([label,sub,low,high],i)=>`<div class="rating-q">
+            <div class="rating-q-label">${label}</div>
+            <div class="rating-q-sub">${sub}</div>
+            <div style="display:flex;gap:4px;margin-bottom:4px">${[1,2,3,4,5].map(n=>`<button class="star ${state.rating6[i]>=n?"on":""}" data-action="vesselStar" data-row="${i}" data-star="${n}">&#9733;</button>`).join("")}</div>
+            <div class="rating-labels"><span>${low}</span><span>${high}</span></div>
+          </div>`).join("")}
+          <div style="margin-bottom:18px">
+            <div style="font:700 13px/1 inherit;color:var(--ink);margin-bottom:12px">7. Quick checks</div>
+            ${yesnoQs.map((q,i)=>`<div class="yesno-row">
+              <div class="yesno-label">${q}</div>
+              <div class="yesno-btns">
+                <button class="yesno-btn ${i===2?"yesno-active-yes":""}" data-action="yesno" data-q="${i}" data-val="yes">&#10003; Yes</button>
+                <button class="yesno-btn ${i!==2?"yesno-active-no":""}" data-action="yesno" data-q="${i}" data-val="no">&#10007; No</button>
+              </div>
+            </div>`).join("")}
+          </div>
+          <div style="margin-bottom:16px">
+            <div style="font:700 11px/1 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">8. Comments (optional)</div>
+            <textarea style="width:100%;min-height:70px;border:1px solid var(--line);border-radius:var(--radius);padding:10px;font:12px/1.5 inherit;color:var(--ink)" placeholder="e.g. Agency fee was high and took 3 days to respond...">${agentData?.note||""}</textarea>
+          </div>
+          <div class="chip-row">
+            <button class="btn primary" data-action="submitRating">Submit Rating &#8594;</button>
+            <button class="btn ghost" data-action="toast" data-toast="Draft saved">Save Draft</button>
+          </div>
+        </section>
+        <section class="card panel">
+          <h3 style="margin-bottom:16px">AidA Score Preview</h3>
+          <div style="background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+              <div style="width:64px;height:64px;border-radius:99px;background:rgba(0,191,168,.08);border:2px solid ${gradeColor};display:flex;align-items:center;justify-content:center;font:700 24px/1 var(--mono);color:${gradeColor};flex-shrink:0">${grade}</div>
+              <div><div style="font:700 13px/1.2 inherit;color:var(--ink);margin-bottom:4px">${c.agent}</div>
+              <div style="font:700 10px/1 var(--mono);color:var(--muted)">${c.port} &middot; ${agentData?(agents.indexOf(agentData)+1)*16+31:47} previous ratings</div>
+              <div style="font:700 10px/1 var(--mono);color:var(--muted);margin-top:2px">Score updates after submission</div></div>
+            </div>
+            ${[["Fee Competitiveness",Math.max(20,100-c.risk*7)],["FX Compliance",c.fx.includes("risk")?32:90],["Voucher Completeness",agentData?.accuracy||72],["Response Time",Math.max(20,100-parseFloat(agentData?.response||"8")*4)]].map(([label,val])=>`<div class="bench-bar-row" style="margin-bottom:8px">
+              <div class="bench-bar-lbl" style="font-size:9px">${label}</div>
+              <div class="bench-bar-track"><div class="bench-bar-fill ${val>75?"mbf-best":val>50?"mbf-ref":"mbf-cur"}" style="width:${val}%">${Math.round(val)} / 100</div></div>
+            </div>`).join("")}
+          </div>
+          <h3 style="margin-bottom:12px">Previous Ratings &mdash; ${c.agent}</h3>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            ${prevRatings.map(r=>`<div style="background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                <div><div style="font:700 11px/1 var(--mono);color:var(--ink)">${r.vessel} &middot; ${r.voy}</div>
+                <div style="font:700 9px/1 var(--mono);color:var(--muted);margin-top:3px">${c.port} &middot; ${r.date} &middot; ${r.op}</div></div>
+                <div style="display:flex;gap:2px">${[1,2,3,4,5].map(n=>`<span style="color:${n<=r.stars?"var(--teal)":"var(--line-2)"};font-size:14px">&#9733;</span>`).join("")}</div>
+              </div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.5">${r.comment}</div>
+            </div>`).join("")}
+          </div>
+        </section>
+      </div>`;
     }
 
     function mini(label, value) {
@@ -1535,6 +1617,12 @@ Best regards, NPR Europa</textarea>
       if (action === "simulateTariff") { showToast(`${t("simulatePda")}: ${money(12200)} · confidence 82%`); return; }
       if (action === "star") { state.rating[Number(target.dataset.row)] = Number(target.dataset.star); if (state.selectedCall) openCallDetail(state.selectedCall.id); return; }
       if (action === "vesselStar") { state.rating6[Number(target.dataset.row)] = Number(target.dataset.star); if (state.selectedCall) $("#modal").innerHTML = renderVesselModal(state.selectedCall); return; }
+      if (action === "yesno") {
+        const btns = target.closest(".yesno-btns").querySelectorAll(".yesno-btn");
+        btns.forEach(b => { b.classList.remove("yesno-active-yes","yesno-active-no"); });
+        target.classList.add(target.dataset.val === "yes" ? "yesno-active-yes" : "yesno-active-no");
+        return;
+      }
     });
 
     document.addEventListener("change", (e) => {

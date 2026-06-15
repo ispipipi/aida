@@ -698,7 +698,7 @@
       { id: "Q-1019", call: "CAPE VERDE · VY-2024-091", type: "Credit Note", status: "Recovered", impact: 720 }
     ];
 
-    let state = { lang: "es", screen: "site", tab: "fileboard", calls: structuredClone(baseCalls), selectedCall: null, selectedCountry: "Spain", uploadStep: 0, tariffPort: "Valencia", rating: [0,0,0], rating6: [0,0,0,0,0,0], vesselTab: "nomination", fileFilter: "all" };
+    let state = { lang: "en", screen: "site", tab: "fileboard", calls: structuredClone(baseCalls), selectedCall: null, selectedCountry: "Spain", uploadStep: 0, tariffPort: "Valencia", rating: [0,0,0], rating6: [0,0,0,0,0,0], vesselTab: "nomination", fileFilter: "all" };
     const $ = (s, r=document) => r.querySelector(s);
     const $$ = (s, r=document) => [...r.querySelectorAll(s)];
     const t = (key) => copy[state.lang][key] || key;

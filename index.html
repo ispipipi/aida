@@ -498,6 +498,30 @@
       background: var(--paper);
       font-size: 28px;
     }
+    .intel-layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 140px); gap: 0; }
+    .intel-sidebar { background: var(--paper); border-right: 1px solid var(--line); padding: 20px; }
+    .intel-main { padding: 20px; background: var(--bg); }
+    .intel-label { font: 700 9px/1 var(--mono); letter-spacing: .1em; color: var(--teal-dark); text-transform: uppercase; margin-bottom: 8px; }
+    .intel-select { width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink); padding: 9px 12px; font: inherit; outline: none; margin-bottom: 14px; }
+    .intel-select:focus { border-color: var(--teal); }
+    .intel-summary { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; font: 700 10px/1.8 var(--mono); color: var(--muted); }
+    .intel-divider { height: 1px; background: var(--line); margin: 14px 0; }
+    .sort-group { display: flex; gap: 0; margin-bottom: 14px; }
+    .sort-btn { flex: 1; padding: 8px; font: 700 9px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; background: var(--paper-2); border: 1px solid var(--line); color: var(--muted); cursor: pointer; transition: all .15s; text-align: center; }
+    .sort-btn:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .sort-btn:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+    .sort-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+    .agent-card-intel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; position: relative; overflow: hidden; margin-bottom: 12px; transition: border-color .15s, box-shadow .15s; }
+    .agent-card-intel:hover { border-color: var(--line-2); box-shadow: 0 2px 8px rgba(16,32,29,.06); }
+    .agent-score-circle { width: 52px; height: 52px; border-radius: 99px; display: flex; align-items: center; justify-content: center; font: 700 20px/1 var(--mono); flex-shrink: 0; }
+    .sc-a { background: rgba(16,166,109,.1); border: 2px solid var(--green); color: var(--green); }
+    .sc-b { background: rgba(0,191,168,.1); border: 2px solid var(--teal); color: var(--teal-dark); }
+    .sc-c { background: rgba(228,155,24,.1); border: 2px solid var(--amber); color: var(--amber); }
+    .sc-d { background: rgba(223,63,69,.1); border: 2px solid var(--red); color: var(--red); }
+    .bench-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .bench-bar-lbl { font: 700 9px/1 var(--mono); color: var(--muted); width: 140px; flex-shrink: 0; }
+    .bench-bar-track { flex: 1; height: 20px; background: var(--paper-2); border-radius: 3px; overflow: hidden; border: 1px solid var(--line); }
+    .bench-bar-fill { height: 100%; display: flex; align-items: center; padding-left: 8px; font: 700 9px/1 var(--mono); border-radius: 3px; }
     .fx-trend {
       width: 100%;
       height: 150px;
@@ -961,10 +985,89 @@
     }
 
     function renderAgents() {
-      const own = agents.filter(a => a.preferred);
-      const best = [...agents].sort((a,b)=>b.score-a.score).slice(0,3);
-      return `${moduleHead(t("agentsTitle"), t("agentsText"), `<select id="countrySelect">${["Spain","Algeria","Greece","Italy","Portugal"].map(c=>`<option ${state.selectedCountry===c?"selected":""}>${c}</option>`).join("")}</select><button class="btn ghost" data-action="toast" data-toast="${t("toastExport")}">${t("export")}</button>`)}
-        <div class="grid-2"><section class="card panel"><h3>${t("preferred")}</h3>${agentCards(own)}</section><section class="card panel"><h3>${t("networkBest")}</h3>${agentCards(best)}</section></div>`;
+      const countryAgents = agents.filter(a => state.selectedCountry === "All" || a.country === state.selectedCountry);
+      const sorted = [...countryAgents].sort((a,b) => b.score - a.score);
+      const portSummary = {
+        Spain: { calls: 47, avg: "EUR 2,560", fx: "Low", fxAvg: "+0.2%" },
+        Algeria: { calls: 6, avg: "DZD 280K · $2,177", fx: "HIGH (DZD)", fxAvg: "+3.8%" },
+        Greece: { calls: 12, avg: "EUR 1,980", fx: "Low", fxAvg: "+0.1%" },
+        Italy: { calls: 19, avg: "EUR 3,200", fx: "Low", fxAvg: "+0.2%" },
+        Portugal: { calls: 8, avg: "EUR 2,100", fx: "Low", fxAvg: "+0.3%" }
+      };
+      const ps = portSummary[state.selectedCountry] || { calls: "—", avg: "—", fx: "—", fxAvg: "—" };
+      const networkMin = countryAgents.length ? Math.min(...countryAgents.map(a=>a.score)) : 0;
+      const networkMax = countryAgents.length ? Math.max(...countryAgents.map(a=>a.score)) : 0;
+      return `<div class="intel-layout">
+        <div class="intel-sidebar">
+          <div class="intel-label">Country</div>
+          <select class="intel-select" id="countrySelect">
+            ${["All","Spain","Algeria","Greece","Italy","Portugal"].map(c=>`<option ${state.selectedCountry===c?"selected":""}>${c}</option>`).join("")}
+          </select>
+          <div class="intel-label">Sort By</div>
+          <div class="sort-group" style="margin-bottom:14px">
+            <button class="sort-btn active">Score</button>
+            <button class="sort-btn">Cost</button>
+            <button class="sort-btn">Quality</button>
+          </div>
+          <div class="intel-divider"></div>
+          <div class="intel-label" style="margin-bottom:10px">Scoring Model</div>
+          <div class="intel-summary">
+            <div>Fee competitiveness <span style="color:var(--ink);font-weight:700">40%</span></div>
+            <div>FX compliance <span style="color:var(--ink);font-weight:700">25%</span></div>
+            <div>Voucher completeness <span style="color:var(--ink);font-weight:700">20%</span></div>
+            <div>Response time <span style="color:var(--ink);font-weight:700">15%</span></div>
+          </div>
+          <div class="intel-divider"></div>
+          <div class="intel-label" style="margin-bottom:10px">Port Summary · ${state.selectedCountry}</div>
+          <div class="intel-summary">
+            <div>Port calls in DB: <span style="color:var(--ink);font-weight:700">${ps.calls}</span></div>
+            <div>Active agents: <span style="color:var(--ink);font-weight:700">${countryAgents.length}</span></div>
+            <div>Avg total DA: <span style="color:var(--ink);font-weight:700">${ps.avg}</span></div>
+            <div>FX risk: <span style="color:${ps.fx.includes("HIGH")?"var(--amber)":"var(--green)"};font-weight:700">${ps.fx}</span></div>
+            <div>Avg FX overcharge: <span style="color:${ps.fx.includes("HIGH")?"var(--red)":"var(--muted)"};font-weight:700">${ps.fxAvg}</span></div>
+          </div>
+        </div>
+        <div class="intel-main">
+          <div style="font:700 10px/1 var(--mono);color:var(--muted);letter-spacing:.04em;margin-bottom:16px">${countryAgents.length} agent${countryAgents.length!==1?"s":""} · ${countryFlag(state.selectedCountry==="All"?"Spain":state.selectedCountry)} ${state.selectedCountry}</div>
+          ${sorted.length === 0 ? `<div class="card panel" style="padding:32px;text-align:center;color:var(--muted)">No agents found for this country.</div>` :
+          sorted.map(a => {
+            const sc = a.score >= 85 ? "sc-a" : a.score >= 70 ? "sc-b" : a.score >= 50 ? "sc-c" : "sc-d";
+            const grade = a.score >= 85 ? "A" : a.score >= 70 ? "B+" : a.score >= 50 ? "C" : "D+";
+            const accentColor = a.score >= 85 ? "var(--green)" : a.score >= 70 ? "var(--teal)" : a.score >= 50 ? "var(--amber)" : "var(--red)";
+            const networkAvgFee = 2560;
+            const agentFeeNum = parseFloat(a.fee) || 0;
+            const agentFeeAmt = Math.round(networkAvgFee * (1 + agentFeeNum/100));
+            return `<div class="agent-card-intel">
+              <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:${accentColor}"></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+                <div>
+                  <div style="font:700 14px/1.2 inherit;color:var(--ink);margin-bottom:4px">${a.name}</div>
+                  <div style="font:700 10px/1 var(--mono);color:var(--muted);letter-spacing:.04em">${countryFlag(a.country)} ${a.port} · ${a.country} · ${a.fee.includes("-")?"":"+"}${a.fee} vs benchmark · ${a.response} avg response</div>
+                </div>
+                <div class="agent-score-circle ${sc}">${grade}</div>
+              </div>
+              <div style="margin-bottom:14px">
+                <div class="mini-bench-title">Agency Fee Benchmark</div>
+                <div class="bench-bar-row"><div class="bench-bar-lbl">Network avg</div><div class="bench-bar-track"><div class="bench-bar-fill mbf-ref" style="width:55%">EUR ${networkAvgFee.toLocaleString()}</div></div></div>
+                <div class="bench-bar-row"><div class="bench-bar-lbl" style="color:${accentColor}">${a.name.split(" ")[0]}</div><div class="bench-bar-track"><div class="bench-bar-fill ${a.score>=70?"mbf-best":"mbf-cur"}" style="width:${Math.min(95,Math.max(20,55*(agentFeeAmt/networkAvgFee)))}%">EUR ${agentFeeAmt.toLocaleString()} ${a.fee}</div></div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                ${[["Fee Competitiveness",a.accuracy],["FX Compliance",a.score>=70?92:a.score>=50?55:22],["Voucher Completeness",Math.min(98,a.accuracy+10)],["Response Time",Math.max(20,100-parseFloat(a.response)*4)]].map(([label,val])=>`<div>
+                  <div style="font:700 8px/1 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">${label}</div>
+                  <div style="height:6px;background:var(--line);border-radius:3px;overflow:hidden"><div style="height:100%;width:${val}%;background:${scoreColor(val)};border-radius:3px"></div></div>
+                  <div style="font:700 10px/1 var(--mono);color:${scoreColor(val)};margin-top:3px">${Math.round(val)} / 100</div>
+                </div>`).join("")}
+              </div>
+              <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--line)">
+                <span class="badge ${a.score>=70?"green":"red"}">${a.fee} fee</span>
+                <span class="badge ${a.score>=70?"green":"amber"}">${a.response} response</span>
+                <button class="btn ghost" style="margin-left:auto" data-action="agentProfile" data-agent="${a.name}">Profile</button>
+                <button class="btn" data-action="toast" data-toast="Compare feature coming soon">Compare</button>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>`;
     }
 
     function agentCards(list) {

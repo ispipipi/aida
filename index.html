@@ -397,6 +397,14 @@
     .app-stat strong { font-size: 24px; letter-spacing: -.03em; }
     .status-dot { display: inline-flex; align-items: center; gap: 7px; }
     .vessel-name { min-width: 170px; }
+    .op-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font: 700 10px/1 var(--mono); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+    .op-load { background: rgba(16,166,109,.10); color: var(--green); border: 1px solid rgba(16,166,109,.25); }
+    .op-disch1 { background: rgba(49,120,212,.09); color: var(--blue); border: 1px solid rgba(49,120,212,.25); }
+    .op-disch2 { background: rgba(228,155,24,.10); color: var(--amber); border: 1px solid rgba(228,155,24,.28); }
+    .op-generic { background: var(--paper-2); color: var(--muted); border: 1px solid var(--line); }
+    .vessel-icon { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; background: rgba(0,191,168,.10); border: 1px solid rgba(0,191,168,.2); font-size: 13px; flex-shrink: 0; }
+    .currency-tag { font: 700 10px/1 var(--mono); padding: 3px 8px; border-radius: 999px; background: rgba(0,191,168,.09); color: var(--teal-dark); border: 1px solid rgba(0,191,168,.2); }
+    .currency-tag.dzd { background: rgba(228,155,24,.10); color: var(--amber); border-color: rgba(228,155,24,.28); }
     .file-actions { display: flex; gap: 7px; justify-content: flex-end; }
     .modal.wide { width: min(1180px, 100%); }
     .vessel-tabs {
@@ -740,6 +748,17 @@
     const money = (n, cur="EUR") => n == null ? "—" : `${cur} ${Number(n).toLocaleString("en-US")}`;
     const riskClass = (risk) => risk >= 8 ? "high" : risk >= 5 ? "mid" : "";
     const statusLabel = (s) => t(s);
+    const countryFlag = (country) => {
+      const flags = {"Spain":"🇪🇸","Algeria":"🇩🇿","Türkiye":"🇹🇷","Turkey":"🇹🇷","Greece":"🇬🇷","Italy":"🇮🇹","Tunisia":"🇹🇳","Portugal":"🇵🇹","Egypt":"🇪🇬","Morocco":"🇲🇦","Romania":"🇷🇴","Ukraine":"🇺🇦"};
+      return flags[country] || "🌍";
+    };
+    const opBadge = (op) => {
+      const o = op.toLowerCase();
+      if (o.includes("load")) return `<span class="op-badge op-load">Loading</span>`;
+      if (o.includes("1st") || (o.includes("discharge") && !o.includes("2nd"))) return `<span class="op-badge op-disch1">1st Discharge</span>`;
+      if (o.includes("2nd")) return `<span class="op-badge op-disch2">2nd Discharge</span>`;
+      return `<span class="op-badge op-generic">${op}</span>`;
+    };
     const statusBadge = (s) => { const color = s==="clean"?"green":s==="disputed"?"red":s==="awaitingPda"?"amber":"blue"; const pulse = s==="disputed" ? " pulse" : ""; return `<span class="badge ${color}"><span class="dot ${color}${pulse}"></span>${statusLabel(s)}</span>`; };
     const scoreColor = (v) => v > 84 ? "var(--green)" : v > 68 ? "var(--teal)" : v > 52 ? "var(--amber)" : "var(--red)";
 
@@ -848,7 +867,7 @@
           <div class="toolbar"><div class="toolbar-left"><input class="search" placeholder="${t("globalSearch")}">${filterLabels.map(f=>`<button class="btn ${state.fileFilter===f[0]?"primary":""}" data-action="fileFilter" data-filter="${f[0]}">${f[1]}</button>`).join("")}</div><button class="btn ghost" data-action="toast" data-toast="${t("toastExport")}">${t("export")}</button></div>
           <div class="table-wrap"><table><thead><tr><th>${t("vessel")}</th><th>${t("voyage")}</th><th>${s("Operación","Operation")}</th><th>${t("port")}</th><th>ETA/ATA</th><th>ETD/ATD</th><th>${s("Moneda","Currency")}</th><th>${t("pda")}</th><th>${t("fda")}</th><th>${t("status")}</th><th>${s("Acciones","Actions")}</th></tr></thead><tbody>
             ${visible.map(c => `<tr class="clickable" data-action="vessel" data-id="${c.id}">
-              <td class="vessel-name"><strong>${c.vessel}</strong><br><small class="muted">${c.agent}</small></td><td class="mono">${c.voyage}</td><td>${c.operation}</td><td>${c.port}</td><td>${c.eta}</td><td>${c.etd}</td><td>${c.currency}</td>
+              <td class="vessel-name"><div style="display:flex;align-items:center;gap:8px"><div class="vessel-icon">🚢</div><div><strong>${c.vessel}</strong><br><small class="muted">${c.agent}</small></div></div></td><td class="mono" style="font-size:11px;color:var(--teal-dark)">${c.voyage}</td><td>${opBadge(c.operation)}</td><td>${countryFlag(c.country)} <span style="color:var(--muted);font-size:13px">${c.port}</span></td><td style="font-size:12px">${c.eta}</td><td style="font-size:12px">${c.etd}</td><td><span class="currency-tag ${c.currency==='DZD'?'dzd':''}">${c.currency}</span></td>
               <td>${statusPill(c.pdaStatus, c.pdaLoaded ? "green" : "amber")}</td><td>${statusPill(c.fdaStatus, c.fdaLoaded ? (c.risk > 6 ? "red" : "green") : "amber")}</td><td>${statusBadge(c.status)}</td>
               <td><div class="file-actions"><button class="btn ghost" data-action="vessel" data-id="${c.id}">${t("open")}</button></div></td>
             </tr>`).join("")}

@@ -1130,8 +1130,7 @@ Re: ${c.vessel} - ${c.port} - ${c.voyage} - Final DA
 
 We have reviewed the FDA and note ${disputed} discrepanc${disputed===1?"y":"ies"} vs the approved PDA totalling ${money(variance,c.currency)}:
 
-${charges.filter(x=>x.fda>x.pda).map(x=>`- ${x.item}: PDA ${money(x.pda,c.currency)} → FDA ${money(x.fda,c.currency)} (+${money(x.fda-x.pda,c.currency)}). Please provide supporting voucher.`).join("
-")}
+${charges.filter(x=>x.fda>x.pda).map(x=>`- ${x.item}: PDA ${money(x.pda,c.currency)} → FDA ${money(x.fda,c.currency)} (+${money(x.fda-x.pda,c.currency)}). Please provide supporting voucher.`).join("\\n")}
 
 Please revert with documentation. Payment will be processed upon resolution.
 
